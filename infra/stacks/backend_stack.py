@@ -10,7 +10,6 @@ Provisions:
 from aws_cdk import (
     Stack,
     Duration,
-    RemovalPolicy,
     CfnOutput,
     aws_s3 as s3,
     aws_lambda as lambda_,
@@ -31,23 +30,23 @@ class BackendStack(Stack):
 
         # ============================================================
         # S3 Bucket for AWS documentation (Knowledge Base data source)
+        # Use existing bucket if it already exists
         # ============================================================
-        docs_bucket = s3.Bucket(
+        docs_bucket = s3.Bucket.from_bucket_name(
             self,
             "DocsDataSource",
             bucket_name=f"aws-wizard-game-docs-{self.account}",
-            removal_policy=RemovalPolicy.RETAIN,
-            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
-            encryption=s3.BucketEncryption.S3_MANAGED,
         )
 
         # ============================================================
         # Lambda Function (FastAPI via Mangum)
         # ============================================================
-        api_lambda = lambda_.DockerImageFunction(
+        api_lambda = lambda_.Function(
             self,
             "WizardApiFunction",
-            code=lambda_.DockerImageCode.from_image_asset("../backend"),
+            runtime=lambda_.Runtime.PYTHON_3_11,
+            handler="app.main.handler",
+            code=lambda_.Code.from_asset("../backend/package"),
             timeout=Duration.seconds(60),
             memory_size=512,
             environment={

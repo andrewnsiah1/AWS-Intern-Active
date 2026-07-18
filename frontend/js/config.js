@@ -7,7 +7,7 @@
 const CONFIG = {
     // Replace with your API Gateway URL after deployment
     // Example: "https://abc123.execute-api.us-east-1.amazonaws.com/prod"
-    API_BASE_URL: "http://localhost:8000",
+    API_BASE_URL: "https://wioozy3d1m.execute-api.us-east-1.amazonaws.com",
 
     // Local storage key for persisting game state
     STORAGE_KEY: "aws-wizard-game-state",
