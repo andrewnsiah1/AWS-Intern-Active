@@ -67,6 +67,21 @@
     // Focus input on load
     ui.chatInput.focus();
 
+    // Reset button
+    const resetBtn = document.getElementById("reset-btn");
+    resetBtn.addEventListener("click", () => {
+        if (confirm("Are you sure you want to reset? All XP, quests, and achievements will be lost.")) {
+            gameState.reset();
+            ui.updateStats(gameState);
+            // Clear chat messages except the welcome
+            const messages = ui.chatMessages.querySelectorAll(".message");
+            messages.forEach((msg, i) => {
+                if (i > 0) msg.remove(); // Keep the first welcome message
+            });
+            ui.showNotification("🔄 Journey reset. Begin anew, Apprentice!", "quest");
+        }
+    });
+
     // Keyboard shortcut: Escape to clear input
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
