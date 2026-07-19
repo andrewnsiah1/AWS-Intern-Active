@@ -12,6 +12,23 @@
     // Initial UI update
     ui.updateStats(gameState);
 
+    // Restore chat history from localStorage
+    const savedHistory = gameState.getChatHistory();
+    if (savedHistory.length > 0) {
+        // Remove the default welcome message since we have history
+        const welcomeMsg = ui.chatMessages.querySelector(".wizard-message");
+        if (welcomeMsg) welcomeMsg.remove();
+
+        // Replay saved messages into the UI
+        savedHistory.forEach(msg => {
+            if (msg.role === "user") {
+                ui.addUserMessage(msg.text);
+            } else {
+                ui.addWizardMessage(msg.text, msg.sources || []);
+            }
+        });
+    }
+
     // Handle form submission
     const chatForm = document.getElementById("chat-form");
     chatForm.addEventListener("submit", async (e) => {

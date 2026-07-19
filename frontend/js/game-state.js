@@ -48,10 +48,49 @@ class GameState {
     reset() {
         this.state = this.getDefault();
         this.save();
+        this.clearChatHistory();
     }
 
     get() {
         return this.state;
+    }
+
+    /**
+     * Save a chat message to history.
+     * Each message: { role: "user"|"wizard", text: string, sources: [] }
+     */
+    addChatMessage(role, text, sources = []) {
+        try {
+            const history = this.getChatHistory();
+            history.push({ role, text, sources, timestamp: Date.now() });
+            // Keep last 50 messages to avoid localStorage bloat
+            const trimmed = history.slice(-50);
+            localStorage.setItem(CONFIG.STORAGE_KEY + "-chat", JSON.stringify(trimmed));
+        } catch (e) {
+            console.warn("Failed to save chat history:", e);
+        }
+    }
+
+    /**
+     * Get saved chat history.
+     */
+    getChatHistory() {
+        try {
+            const saved = localStorage.getItem(CONFIG.STORAGE_KEY + "-chat");
+            if (saved) {
+                return JSON.parse(saved);
+            }
+        } catch (e) {
+            console.warn("Failed to load chat history:", e);
+        }
+        return [];
+    }
+
+    /**
+     * Clear chat history.
+     */
+    clearChatHistory() {
+        localStorage.removeItem(CONFIG.STORAGE_KEY + "-chat");
     }
 
     /**

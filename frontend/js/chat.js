@@ -15,7 +15,17 @@ class ChatService {
         if (this.isLoading) return null;
         this.isLoading = true;
 
+        // Save user message to history
+        this.gameState.addChatMessage("user", message);
+
         try {
+            // Build conversation history for the backend (last 6 messages for context)
+            const chatHistory = this.gameState.getChatHistory();
+            const recentHistory = chatHistory.slice(-7, -1).map(msg => ({
+                role: msg.role === "user" ? "user" : "assistant",
+                content: msg.text,
+            }));
+
             const response = await fetch(`${CONFIG.API_BASE_URL}/chat`, {
                 method: "POST",
                 headers: {
@@ -24,12 +34,12 @@ class ChatService {
                 body: JSON.stringify({
                     message: message,
                     player_state: this.gameState.get(),
+                    conversation_history: recentHistory,
                 }),
             });
 
             if (!response.ok) {
                 if (response.status === 429) {
-                    const errorData = await response.json();
                     return {
                         message: "🧙‍♂️ *The wizard raises a weary hand...* \"Patience, young one. Even ancient magic needs a moment to recharge. Take a breath and ask again shortly.\"",
                         sources: [],
@@ -49,13 +59,17 @@ class ChatService {
                 this.gameState.update(data.player_state);
             }
 
+            // Save wizard response to history
+            this.gameState.addChatMessage("wizard", data.message, data.sources);
+
             return data;
         } catch (error) {
             console.error("Chat API error:", error);
 
             // Return a fallback response so the game still works
-            // (useful for demo/offline mode)
-            return this.getFallbackResponse(message);
+            const fallback = this.getFallbackResponse(message);
+            this.gameState.addChatMessage("wizard", fallback.message);
+            return fallback;
         } finally {
             this.isLoading = false;
         }

@@ -10,6 +10,7 @@ class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = None
     player_state: Optional["PlayerState"] = None
+    conversation_history: Optional[list] = None
 
 
 class PlayerState(BaseModel):

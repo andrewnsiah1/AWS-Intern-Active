@@ -57,6 +57,7 @@ async def chat(request: ChatRequest, raw_request: Request):
     wizard_reply, sources = await ask_wizard(
         message=request.message,
         player_state=player_state,
+        conversation_history=request.conversation_history,
     )
 
     return ChatResponse(
