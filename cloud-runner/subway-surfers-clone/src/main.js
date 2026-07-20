@@ -908,6 +908,7 @@ function checkCollisions() {
         // keeps ticking in the dying state's render loop), then play the
         // fall-back death animation once grounded.
         gameState = 'dying';
+        player.isSliding = false;
         cop.goIdle();
         const waitForLanding = () => {
           if (player.isJumping) {
@@ -928,6 +929,10 @@ function checkCollisions() {
       obstacleManager.remove(obstacle);
       stumbleActive = true;
       const isFatal = strikeCount >= 1;
+
+      // Cancel any active slide so its timer doesn't fire playAnimation('run')
+      // and override the death/stumble animation
+      player.isSliding = false;
 
       if (isFatal) {
         // Fatal second hit — freeze world, wait for landing if mid-jump,
