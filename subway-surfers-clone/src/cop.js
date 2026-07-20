@@ -186,11 +186,17 @@ export class Cop {
   }
 
   // Switches the cop to idle (standing still) — called when the player
-  // dies so the cop stops running and just stands over them.
+  // dies so the cop stops running and just stands over them. Instant swap,
+  // no crossfade, so it doesn't keep running during the blend.
   goIdle() {
     if (!this.active) return;
     this.state = 'idle';
-    this.playAnimation('idle');
+    if (this.currentAction) this.currentAction.stop();
+    const idleAction = this.animations.idle || this.animations.run;
+    if (idleAction) {
+      idleAction.reset().play();
+      this.currentAction = idleAction;
+    }
   }
 
   setOpacity(opacity) {

@@ -908,6 +908,7 @@ function checkCollisions() {
         // keeps ticking in the dying state's render loop), then play the
         // fall-back death animation once grounded.
         gameState = 'dying';
+        cop.goIdle();
         const waitForLanding = () => {
           if (player.isJumping) {
             requestAnimationFrame(waitForLanding);
@@ -931,6 +932,7 @@ function checkCollisions() {
         // Fatal second hit — freeze world, wait for landing if mid-jump,
         // then play fall-back death.
         gameState = 'dying';
+        cop.goIdle();
         const waitForLanding = () => {
           if (player.isJumping) {
             requestAnimationFrame(waitForLanding);
