@@ -140,6 +140,18 @@ export class Cop {
       } catch (e) {
         console.log('No cop slide animation found');
       }
+
+      // Load idle animation (played when the player dies — cop stops and stands)
+      try {
+        const idleGltf = await loader.loadAsync(`${BASE}models/cop/Cop%20Idle.glb`);
+        if (idleGltf.animations.length > 0) {
+          const idleAction = this.mixer.clipAction(idleGltf.animations[0]);
+          this.animations.idle = idleAction;
+          console.log('Cop idle animation loaded');
+        }
+      } catch (e) {
+        console.log('No cop idle animation found');
+      }
     } catch (e) {
       console.warn('Could not load cop model, using placeholder:', e.message);
     }
@@ -171,6 +183,14 @@ export class Cop {
     if (!this.active || this.state === 'fadingOut') return;
     this.state = 'fadingOut';
     this.fadeStart = performance.now();
+  }
+
+  // Switches the cop to idle (standing still) — called when the player
+  // dies so the cop stops running and just stands over them.
+  goIdle() {
+    if (!this.active) return;
+    this.state = 'idle';
+    this.playAnimation('idle');
   }
 
   setOpacity(opacity) {
@@ -218,6 +238,9 @@ export class Cop {
     }
 
     // Mirror player's lane and vertical position
+    // (skip mirroring when idle — cop just stands still over the player)
+    if (this.state === 'idle') return;
+
     const targetX = LANES[player.currentLane];
     this.mesh.position.x += (targetX - this.mesh.position.x) * 0.15;
     this.mesh.position.y = player.mesh.position.y;

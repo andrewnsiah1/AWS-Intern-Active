@@ -879,6 +879,9 @@ function gameOver(reason) {
   finalScoreEl.textContent = Math.floor(score);
   finalCoinsEl.textContent = coins;
 
+  // Cop stops running and stands idle over the player
+  cop.goIdle();
+
   // Defensive cleanup in case a lane quiz was mid-flight
   laneQuizState = 'idle';
   pendingLaneQuiz = null;
@@ -1103,6 +1106,12 @@ function animate() {
   // 'dying' state: world is frozen, only the player's death animation plays
   if (gameState === 'dying') {
     player.update();
+    cop.update(player);
+  }
+
+  // 'over' state: keep cop's idle animation ticking
+  if (gameState === 'over' && cop.active) {
+    cop.update(player);
   }
 
   renderer.render(scene, camera);
