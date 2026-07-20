@@ -186,17 +186,12 @@ export class Cop {
   }
 
   // Switches the cop to idle (standing still) — called when the player
-  // dies so the cop stops running and just stands over them. Instant swap,
-  // no crossfade, so it doesn't keep running during the blend.
+  // dies so the cop stops running and just stands over them. If the cop is
+  // mid-air (mirroring a player jump), it waits until y reaches ground
+  // before switching to idle so it doesn't freeze in the air.
   goIdle() {
     if (!this.active) return;
-    this.state = 'idle';
-    if (this.currentAction) this.currentAction.stop();
-    const idleAction = this.animations.idle || this.animations.run;
-    if (idleAction) {
-      idleAction.reset().play();
-      this.currentAction = idleAction;
-    }
+    this.state = 'landingToIdle';
   }
 
   setOpacity(opacity) {
@@ -246,6 +241,23 @@ export class Cop {
     // Mirror player's lane and vertical position
     // (skip mirroring when idle — cop just stands still over the player)
     if (this.state === 'idle') return;
+
+    // Landing before idle: let gravity bring the cop down, then switch
+    if (this.state === 'landingToIdle') {
+      if (this.mesh.position.y > 0.01) {
+        this.mesh.position.y = Math.max(0, this.mesh.position.y - 0.15);
+      } else {
+        this.mesh.position.y = 0;
+        this.state = 'idle';
+        if (this.currentAction) this.currentAction.stop();
+        const idleAction = this.animations.idle || this.animations.run;
+        if (idleAction) {
+          idleAction.reset().play();
+          this.currentAction = idleAction;
+        }
+      }
+      return;
+    }
 
     const targetX = LANES[player.currentLane];
     this.mesh.position.x += (targetX - this.mesh.position.x) * 0.15;
