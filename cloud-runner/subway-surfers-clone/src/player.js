@@ -354,7 +354,10 @@ export class Player {
         this.mesh.position.y = 0;
         this.isJumping = false;
         this.velocityY = 0;
-        this.playAnimation('run');
+        // Don't override stumble/death animations on landing
+        if (!this.isStumbling) {
+          this.playAnimation('run');
+        }
       }
     }
 
