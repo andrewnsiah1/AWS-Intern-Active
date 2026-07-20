@@ -901,10 +901,22 @@ function checkCollisions() {
       if (!playerBox.intersectsBox(box)) continue;
 
       if (type === 'train') {
+        // Freeze the world. If mid-jump, let the player land first (gravity
+        // keeps ticking in the dying state's render loop), then play the
+        // fall-back death animation once grounded.
         gameState = 'dying';
-        player.playFallBackDeath().then(() => {
-          gameOver('Hit by a train.');
-        });
+        const waitForLanding = () => {
+          if (player.isJumping) {
+            requestAnimationFrame(waitForLanding);
+            player.update();
+            renderer.render(scene, camera);
+          } else {
+            player.playFallBackDeath().then(() => {
+              gameOver('Hit by a train.');
+            });
+          }
+        };
+        waitForLanding();
         return;
       }
 
