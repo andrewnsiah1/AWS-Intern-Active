@@ -11,7 +11,8 @@ export const DIFFICULTY_TIERS = [
   { threshold: 0, label: 'Beginner' },
   { threshold: 2, label: 'Intermediate' },
   { threshold: 4, label: 'Advanced' },
-  { threshold: 7, label: 'Expert' },
+  { threshold: 6, label: 'Expert' },
+  { threshold: 9, label: 'Master' },
 ];
 
 // Legacy score-based difficulty (used as a floor so early-game questions

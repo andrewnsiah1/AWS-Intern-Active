@@ -260,15 +260,17 @@ async def generate_orb_note(request: OrbNoteRequest) -> str:
 
 
 # Used when the player HAS collected the notes orb for the quizzed service.
-# The question must be answerable using ONLY the provided notes - no outside
-# AWS knowledge is allowed to leak in, even if it would be true. This keeps
-# the notes orb meaningfully load-bearing: skipping it costs real ability to
-# answer, and reading it is always sufficient to answer.
+# At lower tiers, questions are grounded directly in the notes. At higher
+# tiers, the question requires REASONING and INFERENCE from the topics and
+# concepts introduced in the notes — it doesn't have to be a verbatim fact
+# from the notes, but must be answerable by someone who understood the
+# TOPICS taught. This makes the quiz progressively more challenging and
+# thought-provoking as the player levels up a service.
 LANE_QUIZ_NOTES_PROMPT = """You are a quiz question generator for "Cloud Runner", an educational endless-runner game that teaches real AWS concepts. Use a neutral, clear, straightforward tone - no persona, no roleplay, no flavor text.
 
 This question will pop up DURING gameplay. The player runs in place while reading it, then picks one of exactly 3 answer choices, each mapped to a lane (left, center, right) on the road. They then run into the lane matching their chosen answer.
 
-The player collected notes orbs for the AWS service "{service_name}" (category: {category}), unlocking exactly these incremental teaching notes, in the order they were taught (the ONLY things the player has read about this service):
+The player collected notes orbs for the AWS service "{service_name}" (category: {category}), unlocking exactly these incremental teaching notes, in the order they were taught:
 
 --- NOTES ON {service_name} ---
 {target_notes}
@@ -278,14 +280,22 @@ The player collected notes orbs for the AWS service "{service_name}" (category: 
 
 Difficulty tier for this question: {difficulty}
 
-STRICT GROUNDING RULE - this is the most important rule: The question, all 3 choices, and the correct answer MUST be derivable ENTIRELY from the notes above (plus any other-service notes provided, if you use them for a comparison). Do NOT introduce any AWS fact, capability, limit, number, or comparison that is not explicitly stated or directly implied in the notes text. If the notes don't mention something (e.g. pricing, specific limits, region availability), you may NOT ask about it or use it as a wrong-answer distractor requiring outside knowledge to rule out. Higher difficulty tiers should be achieved by requiring closer reading/reasoning about the notes text itself (e.g. subtle distinctions between the overview and the analogy, or a comparison against another unlocked service's notes), NOT by pulling in facts beyond the notes.
+DIFFICULTY SCALING — this is crucial, read carefully:
+- Beginner: Ask a simple recall question whose answer is directly stated in the notes. ("What type of storage is S3?")
+- Intermediate: Ask about a use case or scenario where the player must APPLY a concept from the notes to a new situation. The answer isn't word-for-word in the notes but follows logically from what was taught. ("Which service would you use to store video files that need to be downloaded by users worldwide?")
+- Advanced: Ask a question that requires COMPARING or CONTRASTING concepts from the notes (or across multiple unlocked services), or reasoning about what would happen in a specific scenario based on the properties taught. ("If you need storage accessible from multiple EC2 instances simultaneously, which would NOT work?")
+- Expert: Ask a question that requires INFERRING implications, tradeoffs, or limitations from the concepts taught — things not explicitly stated but logically follow from the properties described. The player has to THINK, not just remember. ("A service that attaches to a single instance would have what limitation for a horizontally-scaled app?")
+- Master: Ask a question that requires combining knowledge from MULTIPLE notes/services, reasoning about architecture decisions, or predicting failure modes. The player must synthesize everything they've learned and apply it to a novel problem. ("If your app needs both fast key-value lookups AND complex relational queries, what combination would you need?")
+
+The question does NOT need to be answerable by quoting the notes verbatim (except at Beginner). It MUST be answerable by someone who UNDERSTOOD the topics and concepts introduced in the notes and can reason about them. Do NOT ask about specific AWS details that require outside knowledge unrelated to the topics in the notes (e.g. don't ask about pricing, specific region names, or API calls unless the notes mention them).
 
 Additional rules:
-1. Exactly 3 answer choices, only one correct - this is different from a normal 4-choice quiz because there are only 3 lanes.
-2. Keep the question and choices VERY short - a sentence or less each. This appears as a popup during a fast-paced runner game and must be read in a few seconds.
-3. Include a one-sentence "fact" shown as feedback after the player answers - it must also come directly from the notes, reinforcing the correct answer.
+1. Exactly 3 answer choices, only one correct.
+2. Keep the question and choices VERY short - a sentence or less each.
+3. Include a one-sentence "fact" shown as feedback - this should explain the reasoning, not just restate a note.
 4. No fantasy metaphors, no wizard language - plain technical English only.
-5. CRITICAL - WRONG ANSWERS MUST BE CLEARLY WRONG: The 2 incorrect choices must be unambiguously, obviously wrong to someone who has read the notes. They should describe things the service clearly does NOT do or IS NOT (e.g. a storage service's wrong answers might be "runs serverless code" or "manages DNS"). NEVER make a wrong answer a partial truth, a subset of the correct answer, or something the service also does. If the correct answer is "set up, operate, and scale databases", do NOT use "set up databases" or "scale databases" as wrong answers since those are also true. The player must be able to rule out wrong answers with confidence, not feel tricked by a technicality.
+5. CRITICAL - WRONG ANSWERS MUST BE CLEARLY WRONG: The 2 incorrect choices must be unambiguously wrong to someone who understood the notes. They should describe things that contradict or are irrelevant to the concepts taught. NEVER make a wrong answer a partial truth or something that could arguably be correct.
+6. VARIETY: Do not repeat the same question structure as previous quizzes. Each question should test a DIFFERENT aspect or angle of the service's concepts.
 
 Respond with ONLY valid JSON in this exact shape, no other text:
 {{

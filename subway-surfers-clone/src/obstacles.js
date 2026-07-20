@@ -140,7 +140,8 @@ export class ObstacleManager {
     const z = SPAWN_DISTANCE + Math.random() * 10;
 
     // Check what's already near this Z to avoid stacking
-    const MIN_Z_GAP = 15; // minimum distance between obstacle groups
+    // Gap shrinks as score rises so obstacles get packed tighter
+    const MIN_Z_GAP = Math.max(8, 15 - score * 0.008);
     const nearbyObs = this.obstacles.filter(
       o => Math.abs(o.mesh.position.z - z) < MIN_Z_GAP
     );
@@ -158,8 +159,9 @@ export class ObstacleManager {
 
     // Difficulty ramp: as score increases, 2-lane blocks and trains become
     // more common so the road gets progressively harder to navigate.
-    const twoLaneChance = Math.min(0.45, 0.15 + score * 0.0004);
-    const trainChance = Math.min(0.5, 0.35 + score * 0.0002);
+    // No hard caps — keeps scaling so the game never stops getting harder.
+    const twoLaneChance = Math.min(0.65, 0.15 + score * 0.0006);
+    const trainChance = Math.min(0.6, 0.3 + score * 0.0003);
 
     // Decide how many lanes to block
     const numLanes = Math.random() < twoLaneChance ? 2 : 1;
@@ -238,8 +240,8 @@ export class ObstacleManager {
     if (allowSpawn && score - this.lastSpawnScore > this.spawnInterval) {
       this.spawn(score);
       this.lastSpawnScore = score;
-      // Spawn interval shrinks as score rises: starts at 30, floors at 10
-      this.spawnInterval = Math.max(10, 30 - score * 0.025);
+      // Spawn interval shrinks as score rises: starts at 30, floors at 6
+      this.spawnInterval = Math.max(6, 30 - score * 0.03);
     }
 
     for (let i = this.obstacles.length - 1; i >= 0; i--) {
