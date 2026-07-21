@@ -108,6 +108,7 @@ Want to add a new game or improve an existing one?
 ## Credits
 
 Built by interns, for interns ★
+
 Andrew Nsiah - Block Blast, Cloud Runner
 
 Ankita Saha - Onboarding Quest
