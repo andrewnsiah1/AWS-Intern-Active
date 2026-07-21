@@ -696,6 +696,33 @@ document.getElementById('how-to-play-btn').addEventListener('click', () => {
   document.getElementById('rules-screen').style.display = 'flex';
 });
 
+document.getElementById('back-to-menu-btn').addEventListener('click', () => {
+  window.location.href = '../../';
+});
+
+document.getElementById('gameover-menu-btn').addEventListener('click', () => {
+  window.location.href = '../../';
+});
+
+document.getElementById('summary-menu-btn').addEventListener('click', () => {
+  window.location.href = '../../';
+});
+
+// ----- Music -----
+let bgm = null;
+function startMusic() {
+  if (!bgm) {
+    bgm = new Audio('./music/bgm.mp3');
+    bgm.loop = true;
+    bgm.volume = 0.25;
+  }
+  bgm.currentTime = 0;
+  bgm.play().catch(() => {});
+}
+function stopMusic() {
+  if (bgm) { bgm.pause(); bgm.currentTime = 0; }
+}
+
 document.getElementById('rules-start-btn').addEventListener('click', () => {
   document.getElementById('rules-screen').style.display = 'none';
   if (loadingEl) loadingEl.style.display = 'none';
@@ -709,6 +736,7 @@ document.getElementById('rules-start-btn').addEventListener('click', () => {
   cop.reset();
   updateStrikeIndicator();
   scheduleNextLaneQuiz(0);
+  startMusic();
 });
 
 laneQuizNotesToggleEl.addEventListener('click', () => {
@@ -874,6 +902,7 @@ function registerCorrectAnswerForChase() {
 // game-over screen (e.g. "Hit by a train" vs "Two strikes").
 function gameOver(reason) {
   gameState = 'over';
+  stopMusic();
   gameOverEl.style.display = 'block';
   gameOverReasonEl.textContent = reason || '';
   finalScoreEl.textContent = Math.floor(score);
@@ -1134,3 +1163,51 @@ window.addEventListener('resize', () => {
 });
 
 animate();
+
+// ----- Pause System -----
+const pauseOverlay = document.getElementById('pause-overlay');
+const countdownOverlay = document.getElementById('countdown-overlay');
+const countdownNumber = document.getElementById('countdown-number');
+let pausedFromState = null;
+
+function pauseGame() {
+  if (gameState !== 'playing') return;
+  pausedFromState = gameState;
+  gameState = 'paused';
+  pauseOverlay.style.display = 'flex';
+  if (bgm) bgm.pause();
+}
+
+function resumeWithCountdown() {
+  pauseOverlay.style.display = 'none';
+  countdownOverlay.style.display = 'flex';
+  let count = 3;
+  countdownNumber.textContent = count;
+  const interval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      countdownNumber.textContent = count;
+    } else {
+      clearInterval(interval);
+      countdownOverlay.style.display = 'none';
+      gameState = 'playing';
+      if (bgm) bgm.play().catch(() => {});
+    }
+  }, 800);
+}
+
+document.getElementById('pause-resume-btn').addEventListener('click', resumeWithCountdown);
+document.getElementById('pause-exit-btn').addEventListener('click', () => {
+  stopMusic();
+  window.location.href = '../../';
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (gameState === 'paused') {
+      resumeWithCountdown();
+    } else if (gameState === 'playing') {
+      pauseGame();
+    }
+  }
+});

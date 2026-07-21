@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intern Block Blast – Master Your Internship</title>
+  <script type="module" crossorigin src="../assets/blast-DiRIk8h9.js"></script>
+  <link rel="modulepreload" crossorigin href="../assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin href="../assets/blast-qAiJFJRb.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+      <div class="start-content">
+        <h1>🚀 Intern Block Blast</h1>
+        <p class="tagline">Master your internship, one block at a time</p>
+        <div class="categories-preview">
+          <span class="cat-badge time">⏰ Time Management</span>
+          <span class="cat-badge ai">🤖 AI Tools</span>
+          <span class="cat-badge docs">📝 Design Docs</span>
+          <span class="cat-badge connect">🤝 Networking</span>
+        </div>
+        <button id="start-btn" class="primary-btn">Start Game</button>
+        <button id="how-to-btn" class="secondary-btn">How to Play</button>
+        <button id="back-to-menu-btn" class="secondary-btn">← Back to Menu</button>
+      </div>
+    </div>
+
+    <!-- How to Play -->
+    <div id="how-to-screen" class="screen">
+      <div class="how-to-content">
+        <h2>How to Play</h2>
+        <div class="instructions">
+          <div class="step">
+            <span class="step-icon">🧩</span>
+            <p><strong>Drag & Drop</strong> blocks onto the 8×8 grid</p>
+          </div>
+          <div class="step">
+            <span class="step-icon">💥</span>
+            <p><strong>Clear rows or columns</strong> to score points</p>
+          </div>
+          <div class="step">
+            <span class="step-icon">📚</span>
+            <p><strong>Each cleared line</strong> unlocks an internship tip</p>
+          </div>
+          <div class="step">
+            <span class="step-icon">🏆</span>
+            <p><strong>Answer quiz questions</strong> for bonus points</p>
+          </div>
+        </div>
+        <p class="tip">Blocks are themed around 4 skills: Time Management, AI Tools, Design Docs, and Networking. Clear lines to collect tips in each category!</p>
+        <button id="back-to-start-btn" class="secondary-btn">Back</button>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div class="game-header">
+        <div class="score-display">
+          <span class="label">Score</span>
+          <span id="score">0</span>
+        </div>
+        <div class="level-display">
+          <span class="label">Level</span>
+          <span id="level">1</span>
+        </div>
+        <div class="tips-display">
+          <span class="label">Tips</span>
+          <span id="tips-count">0</span>
+        </div>
+      </div>
+
+      <div id="game-board" class="game-board"></div>
+
+      <div id="piece-tray" class="piece-tray"></div>
+
+      <div class="game-footer">
+        <button id="tips-btn" class="icon-btn" title="View Tips">📚</button>
+        <button id="pause-btn" class="icon-btn" title="Pause">⏸️</button>
+      </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quiz-modal" class="modal hidden">
+      <div class="modal-content quiz-content">
+        <h3 id="quiz-category-label"></h3>
+        <p id="quiz-question"></p>
+        <div id="quiz-choices" class="quiz-choices"></div>
+        <div id="quiz-feedback" class="quiz-feedback hidden"></div>
+        <button id="quiz-continue-btn" class="primary-btn hidden">Continue</button>
+      </div>
+    </div>
+
+    <!-- Tips Modal -->
+    <div id="tips-modal" class="modal hidden">
+      <div class="modal-content tips-content">
+        <h3>📚 Internship Tips Collected</h3>
+        <div class="tips-tabs">
+          <button class="tip-tab active" data-category="time">⏰ Time</button>
+          <button class="tip-tab" data-category="ai">🤖 AI</button>
+          <button class="tip-tab" data-category="docs">📝 Docs</button>
+          <button class="tip-tab" data-category="connect">🤝 Network</button>
+        </div>
+        <div id="tips-list" class="tips-list"></div>
+        <button id="close-tips-btn" class="secondary-btn">Close</button>
+      </div>
+    </div>
+
+    <!-- Pause Modal -->
+    <div id="pause-modal" class="modal hidden">
+      <div class="modal-content" style="text-align:center;">
+        <h3 style="font-size:2rem; text-transform:uppercase; margin-bottom:20px;">⏸ PAUSED</h3>
+        <button id="pause-continue-btn" class="primary-btn">Continue</button>
+        <button id="pause-menu-btn" class="secondary-btn">← Back to Menu</button>
+      </div>
+    </div>
+
+    <!-- Game Over -->
+    <div id="gameover-screen" class="screen">
+      <div class="gameover-content">
+        <h2>Game Over!</h2>
+        <div class="final-stats">
+          <div class="stat"><span class="stat-label">Final Score</span><span id="final-score">0</span></div>
+          <div class="stat"><span class="stat-label">Lines Cleared</span><span id="final-lines">0</span></div>
+          <div class="stat"><span class="stat-label">Tips Collected</span><span id="final-tips">0</span></div>
+        </div>
+        <div id="gameover-tips" class="gameover-tips"></div>
+        <button id="play-again-btn" class="primary-btn">Play Again</button>
+        <button id="main-menu-btn" class="secondary-btn">← Back to Menu</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

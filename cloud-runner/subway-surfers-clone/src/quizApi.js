@@ -6,8 +6,11 @@
 // Set to false to use the deployed API Gateway URL.
 const USE_LOCAL_BACKEND = false;
 
-const API_BASE_URL = USE_LOCAL_BACKEND
-  ? 'http://localhost:8000'
+// In dev mode, Vite proxies /api to the real backend (avoids CORS issues).
+// In production (GitHub Pages), hit the API directly.
+const IS_DEV = import.meta.env.DEV;
+const API_BASE_URL = IS_DEV
+  ? '/api'
   : 'https://ew4z195och.execute-api.us-east-1.amazonaws.com';
 const REQUEST_TIMEOUT_MS = 12000;
 

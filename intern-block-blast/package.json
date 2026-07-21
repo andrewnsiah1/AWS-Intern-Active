@@ -1,0 +1,17 @@
+{
+  "name": "intern-block-blast",
+  "version": "1.0.0",
+  "description": "Block Blast-style puzzle game that teaches interns how to optimize their time, leverage AI, write design docs, and connect with peers",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^5.4.11"
+  }
+}

@@ -3,612 +3,110 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>City Runner</title>
+  <title>Cloud Runner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=block" rel="stylesheet" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      overflow: hidden;
-      background: #1a1a2e;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    #game-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-    #ui {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      color: white;
-      font-size: 24px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-      z-index: 10;
-      pointer-events: none;
-    }
-    #score {
-      font-size: 32px;
-      font-weight: bold;
-    }
-    #strike-indicator {
-      font-size: 15px;
-      margin-top: 4px;
-      min-height: 20px;
-      color: #ff6b6b;
-      font-weight: 600;
-    }
-    #game-over {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      text-align: center;
-      z-index: 20;
-      display: none;
-    }
-    #game-over h1 {
-      font-size: 64px;
-      margin-bottom: 20px;
-      color: #ff6b6b;
-    }
-    #game-over p {
-      font-size: 24px;
-      margin-bottom: 30px;
-    }
-    .btn {
-      padding: 15px 40px;
-      font-size: 20px;
-      background: #4ecdc4;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      transition: transform 0.1s;
-      pointer-events: auto;
-    }
-    .btn:hover {
-      transform: scale(1.05);
-    }
-    #start-screen {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: white;
-      text-align: center;
-      z-index: 20;
-    }
-    #start-screen h1 {
-      font-size: 56px;
-      margin-bottom: 10px;
-      background: linear-gradient(135deg, #4ecdc4, #44a08d);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    #start-screen p {
-      font-size: 18px;
-      margin-bottom: 30px;
-      opacity: 0.8;
-    }
-    /* Rules/How-to-play screen */
-    #rules-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(10, 10, 20, 0.95);
-      z-index: 25;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      overflow-y: auto;
-      padding: 20px;
-    }
-    #rules-box {
-      background: #16213e;
-      border-radius: 16px;
-      padding: 36px 40px;
-      max-width: 560px;
-      width: 90%;
-      color: white;
-      text-align: left;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-    #rules-box h1 {
-      font-size: 30px;
-      margin-bottom: 20px;
-      color: #4ecdc4;
-      text-align: center;
-    }
-    .rules-section {
-      margin-bottom: 18px;
-    }
-    .rules-heading {
-      font-size: 15px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #4ecdc4;
-      margin-bottom: 6px;
-    }
-    .rules-list {
-      padding-left: 20px;
-      font-size: 14px;
-      line-height: 1.7;
-      opacity: 0.9;
-    }
-    .rules-list li {
-      margin-bottom: 4px;
-    }
-    #rules-box .btn {
-      display: block;
-      margin: 20px auto 0;
-    }
-    #loading {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: white;
-      font-size: 14px;
-      opacity: 0.7;
-      z-index: 30;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #1a1a2e; font-family: 'Space Grotesk', sans-serif; }
+    #game-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+    #ui { position: fixed; top: 16px; left: 16px; z-index: 10; pointer-events: none; }
+    #score { font-size: 28px; font-weight: 700; color: #FFFDF5; background: #000; border: 3px solid #FFFDF5; padding: 4px 14px; display: inline-block; box-shadow: 4px 4px 0px 0px #FFD93D; }
+    #coins { font-size: 14px; font-weight: 700; color: #FFFDF5; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.1em; }
+    #strike-indicator { font-size: 14px; margin-top: 4px; min-height: 20px; color: #FF6B6B; font-weight: 700; text-transform: uppercase; }
+    #game-over { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 20; display: none; background: #FFFDF5; border: 4px solid #000; box-shadow: 12px 12px 0px 0px #000; padding: 36px 40px; max-width: 420px; width: 90%; }
+    #game-over h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 16px; color: #000; text-transform: uppercase; }
+    #game-over p { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: #000; }
+    .btn { padding: 14px 36px; font-size: 1rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; background: #4ecdc4; border: 4px solid #000; color: #000; cursor: pointer; text-transform: uppercase; letter-spacing: 0.08em; box-shadow: 6px 6px 0px 0px #000; transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; pointer-events: auto; }
+    .btn:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0px 0px #000; }
+    .btn:active { transform: translate(4px, 4px); box-shadow: 0px 0px 0px 0px #000; }
+    #start-screen { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 20; background: #FFFDF5; border: 4px solid #000; box-shadow: 12px 12px 0px 0px #000; padding: 40px; max-width: 460px; width: 90%; }
+    #start-screen h1 { font-size: 3rem; font-weight: 700; margin-bottom: 8px; color: #000; text-transform: uppercase; letter-spacing: -0.03em; }
+    #start-screen p { font-size: 1rem; font-weight: 700; margin-bottom: 24px; color: #000; text-transform: uppercase; letter-spacing: 0.1em; }
+    #rules-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 25; display: none; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
+    #rules-box { background: #FFFDF5; border: 4px solid #000; box-shadow: 12px 12px 0px 0px #000; padding: 36px 40px; max-width: 560px; width: 90%; color: #000; text-align: left; max-height: 85vh; overflow-y: auto; }
+    #rules-box h1 { font-size: 2rem; font-weight: 700; margin-bottom: 20px; text-align: center; text-transform: uppercase; }
+    .rules-section { margin-bottom: 18px; }
+    .rules-heading { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px; background: #FFD93D; border: 2px solid #000; display: inline-block; padding: 2px 10px; }
+    .rules-list { padding-left: 20px; font-size: 14px; font-weight: 500; line-height: 1.8; }
+    .rules-list li { margin-bottom: 4px; }
+    #rules-box .btn { display: block; margin: 24px auto 0; }
+    #loading { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #FFFDF5; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; z-index: 30; background: #000; border: 3px solid #FFFDF5; padding: 6px 16px; }
+    .service-chip { display: inline-block; padding: 4px 12px; margin: 4px; font-size: 12px; font-weight: 700; color: #000; text-transform: uppercase; border: 3px solid #000; box-shadow: 3px 3px 0px 0px #000; }
+    #services-collected { margin: 15px 0 25px; max-width: 500px; }
 
-    /* Service chips shown on game-over / summary */
-    .service-chip {
-      display: inline-block;
-      padding: 6px 14px;
-      margin: 4px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      color: white;
-    }
+    #lesson-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 40; display: none; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
+    #lesson-box { background: #FFFDF5; border: 4px solid #000; box-shadow: 12px 12px 0px 0px #000; padding: 36px; max-width: 600px; width: 90%; color: #000; text-align: center; max-height: 85vh; overflow-y: auto; }
+    #lesson-box h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
+    .lesson-subtitle { font-size: 14px; font-weight: 500; margin-bottom: 25px; }
+    #lesson-cards { display: flex; flex-direction: column; gap: 14px; margin-bottom: 25px; }
+    .lesson-card { background: #FFF; border: 3px solid #000; padding: 16px 20px; text-align: left; border-left: 8px solid; box-shadow: 4px 4px 0px 0px #000; }
+    .lesson-card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+    .lesson-card-name { font-size: 1.1rem; font-weight: 700; }
+    .lesson-card-category { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+    .lesson-card-fact { font-size: 14px; font-weight: 500; line-height: 1.6; }
+    .lesson-card-toggle { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; color: #000; cursor: pointer; user-select: none; text-transform: uppercase; border-bottom: 2px solid #000; }
+    .lesson-card-toggle:hover { background: #FFD93D; }
+    .lesson-card-details { display: none; margin-top: 14px; padding-top: 14px; border-top: 3px solid #000; }
+    .lesson-card-details.open { display: block; }
+    .lesson-detail-section { margin-bottom: 12px; }
+    .lesson-detail-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px; }
+    .lesson-detail-text { font-size: 14px; font-weight: 500; line-height: 1.5; }
+    .lesson-detail-loading { font-size: 13px; font-weight: 500; font-style: italic; }
+    .lesson-ask-form { display: flex; gap: 8px; margin-top: 14px; }
+    .lesson-ask-input { flex: 1; padding: 10px 12px; border: 3px solid #000; background: #FFF; color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 500; }
+    .lesson-ask-input::placeholder { color: rgba(0,0,0,0.4); }
+    .lesson-ask-input:focus { outline: none; background: #FFD93D; }
+    .lesson-ask-btn { padding: 10px 16px; border: 3px solid #000; background: #4ecdc4; color: #000; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; box-shadow: 3px 3px 0px 0px #000; }
+    .lesson-ask-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px 0px #000; }
+    .lesson-ask-btn:disabled { opacity: 0.4; cursor: default; }
+    .lesson-ask-answer { margin-top: 10px; font-size: 14px; font-weight: 500; line-height: 1.5; background: #FFF; border: 2px solid #000; padding: 10px 12px; }
 
-    #services-collected {
-      margin: 15px 0 25px;
-      max-width: 500px;
-    }
+    #orb-toast { position: fixed; top: 90px; left: 50%; transform: translateX(-50%) translateY(-10px); z-index: 25; background: #FFFDF5; border: 4px solid #000; box-shadow: 6px 6px 0px 0px #000; padding: 12px 20px; max-width: 420px; width: 90%; color: #000; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
+    #orb-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #orb-toast-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; }
+    #orb-toast-fact { font-size: 13px; font-weight: 500; line-height: 1.4; }
 
-    /* Lesson screen */
-    #lesson-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(10, 10, 20, 0.95);
-      z-index: 40;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      overflow-y: auto;
-      padding: 20px;
-    }
-    #lesson-box {
-      background: #16213e;
-      border-radius: 16px;
-      padding: 40px;
-      max-width: 600px;
-      width: 90%;
-      color: white;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-    #lesson-box h1 {
-      font-size: 32px;
-      margin-bottom: 8px;
-      color: #4ecdc4;
-    }
-    .lesson-subtitle {
-      font-size: 14px;
-      opacity: 0.7;
-      margin-bottom: 25px;
-    }
-    #lesson-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin-bottom: 25px;
-    }
-    .lesson-card {
-      background: #0f3460;
-      border-radius: 10px;
-      padding: 16px 20px;
-      text-align: left;
-      border-left: 5px solid;
-    }
-    .lesson-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 6px;
-    }
-    .lesson-card-name {
-      font-size: 18px;
-      font-weight: 700;
-    }
-    .lesson-card-category {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      opacity: 0.7;
-    }
-    .lesson-card-fact {
-      font-size: 15px;
-      line-height: 1.5;
-      opacity: 0.9;
-    }
-    .lesson-card-toggle {
-      display: inline-block;
-      margin-top: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #4ecdc4;
-      cursor: pointer;
-      user-select: none;
-    }
-    .lesson-card-toggle:hover {
-      text-decoration: underline;
-    }
-    .lesson-card-details {
-      display: none;
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(255,255,255,0.15);
-    }
-    .lesson-card-details.open {
-      display: block;
-    }
-    .lesson-detail-section {
-      margin-bottom: 12px;
-    }
-    .lesson-detail-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      opacity: 0.6;
-      margin-bottom: 4px;
-    }
-    .lesson-detail-text {
-      font-size: 14px;
-      line-height: 1.5;
-      opacity: 0.9;
-    }
-    .lesson-detail-loading {
-      font-size: 13px;
-      opacity: 0.6;
-      font-style: italic;
-    }
-    .lesson-ask-form {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    .lesson-ask-input {
-      flex: 1;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.05);
-      color: white;
-      font-size: 13px;
-    }
-    .lesson-ask-input::placeholder {
-      color: rgba(255,255,255,0.4);
-    }
-    .lesson-ask-btn {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      background: #4ecdc4;
-      color: white;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .lesson-ask-btn:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-    .lesson-ask-answer {
-      margin-top: 10px;
-      font-size: 14px;
-      line-height: 1.5;
-      opacity: 0.9;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
+    #lane-quiz-popup { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); z-index: 35; display: none; background: #FFFDF5; border: 4px solid #000; box-shadow: 8px 8px 0px 0px #000; padding: 24px 28px; max-width: 480px; width: 90%; color: #000; text-align: center; }
+    #lane-quiz-question { font-size: 1.1rem; font-weight: 700; line-height: 1.4; margin-bottom: 18px; }
+    #lane-quiz-choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .lane-quiz-choice { padding: 10px 16px; background: #FFF; border: 3px solid #000; font-size: 14px; font-weight: 500; text-align: left; display: flex; align-items: center; gap: 10px; box-shadow: 3px 3px 0px 0px #000; transition: transform 0.1s, box-shadow 0.1s, background 0.1s; }
+    .lane-quiz-choice .lane-tag { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; min-width: 46px; letter-spacing: 0.05em; }
+    .lane-quiz-choice.selected { background: #FFD93D; transform: translate(2px, 2px); box-shadow: 0px 0px 0px 0px #000; }
+    #lane-quiz-hint { font-size: 12px; font-weight: 500; }
+    #lane-quiz-notes-toggle { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 700; color: #000; cursor: pointer; user-select: none; border-bottom: 2px solid #000; text-transform: uppercase; }
+    #lane-quiz-notes-toggle:hover { background: #FFD93D; }
+    #lane-quiz-notes-panel { display: none; margin-top: 12px; padding-top: 12px; border-top: 3px solid #000; text-align: left; max-height: 220px; overflow-y: auto; }
+    #lane-quiz-notes-panel.open { display: block; }
+    #lane-quiz-no-notes { font-size: 13px; font-weight: 500; font-style: italic; }
+    #lane-quiz-loading { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); z-index: 35; display: none; background: #FFFDF5; border: 4px solid #000; box-shadow: 6px 6px 0px 0px #000; padding: 14px 24px; color: #000; font-size: 14px; font-weight: 700; text-transform: uppercase; }
+    #lane-quiz-result { position: fixed; top: 15%; left: 50%; transform: translateX(-50%); z-index: 36; display: none; background: #FFFDF5; padding: 16px 26px; color: #000; font-size: 15px; font-weight: 500; text-align: center; max-width: 420px; border: 4px solid #000; box-shadow: 8px 8px 0px 0px #000; }
+    #lane-quiz-result.correct { border-color: #4ecdc4; box-shadow: 8px 8px 0px 0px #4ecdc4; }
+    #lane-quiz-result.incorrect { border-color: #FF6B6B; box-shadow: 8px 8px 0px 0px #FF6B6B; }
+    #lane-quiz-result .result-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+    #lane-quiz-result-hint { margin-top: 10px; font-size: 12px; font-weight: 500; }
+    #lane-quiz-result.correct .result-title { color: #000; }
+    #lane-quiz-result.incorrect .result-title { color: #000; }
 
-    /* Orb pickup toast — brief micro-lesson shown when a notes orb is collected */
-    #orb-toast {
-      position: fixed;
-      top: 90px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-10px);
-      z-index: 25;
-      background: #16213e;
-      border: 2px solid #4ecdc4;
-      border-radius: 12px;
-      padding: 12px 20px;
-      max-width: 420px;
-      width: 90%;
-      color: white;
-      text-align: center;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-    }
-    #orb-toast.visible {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-    #orb-toast-name {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    #orb-toast-fact {
-      font-size: 13px;
-      line-height: 1.4;
-      opacity: 0.9;
-    }
-
-    /* In-run lane quiz popup */
-    #lane-quiz-popup {
-      position: fixed;
-      top: 15%;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 35;
-      display: none;
-      background: #16213e;
-      border: 2px solid #4ecdc4;
-      border-radius: 16px;
-      padding: 24px 30px;
-      max-width: 480px;
-      width: 90%;
-      color: white;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    }
-    #lane-quiz-question {
-      font-size: 19px;
-      line-height: 1.4;
-      margin-bottom: 18px;
-    }
-    #lane-quiz-choices {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .lane-quiz-choice {
-      padding: 10px 16px;
-      border-radius: 8px;
-      background: #0f3460;
-      border: 2px solid transparent;
-      font-size: 15px;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .lane-quiz-choice .lane-tag {
-      font-size: 11px;
-      font-weight: 700;
-      opacity: 0.6;
-      min-width: 46px;
-    }
-    .lane-quiz-choice.selected {
-      background: #1a4d80;
-      border-color: #4ecdc4;
-    }
-    #lane-quiz-hint {
-      font-size: 12px;
-      opacity: 0.6;
-    }
-    #lane-quiz-notes-toggle {
-      display: inline-block;
-      margin-top: 4px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #4ecdc4;
-      cursor: pointer;
-      user-select: none;
-    }
-    #lane-quiz-notes-toggle:hover {
-      text-decoration: underline;
-    }
-    #lane-quiz-notes-panel {
-      display: none;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255,255,255,0.15);
-      text-align: left;
-      max-height: 220px;
-      overflow-y: auto;
-    }
-    #lane-quiz-notes-panel.open {
-      display: block;
-    }
-    #lane-quiz-no-notes {
-      font-size: 13px;
-      opacity: 0.65;
-      font-style: italic;
-    }
-    #lane-quiz-loading {
-      position: fixed;
-      top: 15%;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 35;
-      display: none;
-      background: #16213e;
-      border-radius: 16px;
-      padding: 18px 26px;
-      color: white;
-      font-size: 14px;
-      opacity: 0.85;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
-    #lane-quiz-result {
-      position: fixed;
-      top: 15%;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 36;
-      display: none;
-      background: #16213e;
-      border-radius: 16px;
-      padding: 16px 26px;
-      color: white;
-      font-size: 15px;
-      text-align: center;
-      max-width: 420px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-      border: 2px solid;
-    }
-    #lane-quiz-result.correct {
-      border-color: #2ecc71;
-    }
-    #lane-quiz-result.incorrect {
-      border-color: #ff6b6b;
-    }
-    #lane-quiz-result .result-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    #lane-quiz-result-hint {
-      margin-top: 10px;
-      font-size: 12px;
-      opacity: 0.6;
-    }
-    #lane-quiz-result.correct .result-title {
-      color: #2ecc71;
-    }
-    #lane-quiz-result.incorrect .result-title {
-      color: #ff6b6b;
-    }
-
-    /* Summary screen */
-    #summary-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(10, 10, 20, 0.92);
-      z-index: 40;
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-    #summary-box {
-      background: #16213e;
-      border-radius: 16px;
-      padding: 40px;
-      max-width: 550px;
-      width: 90%;
-      color: white;
-      text-align: center;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-    #summary-box h1 {
-      font-size: 36px;
-      margin-bottom: 15px;
-      color: #4ecdc4;
-    }
-    #summary-stats {
-      font-size: 16px;
-      opacity: 0.85;
-      margin-bottom: 20px;
-    }
-    #summary-services {
-      margin-bottom: 25px;
-      max-width: 500px;
-    }
-    /* Quiz review section */
-    #quiz-review {
-      text-align: left;
-      margin-bottom: 20px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    .quiz-review-item {
-      border-radius: 8px;
-      margin-bottom: 8px;
-      border-left: 4px solid;
-    }
-    .quiz-review-item.correct {
-      border-color: #2ecc71;
-    }
-    .quiz-review-item.incorrect {
-      border-color: #ff6b6b;
-    }
-    .quiz-review-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .quiz-review-header:hover {
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-    }
-    .quiz-review-dot {
-      font-size: 16px;
-      font-weight: 700;
-      min-width: 20px;
-    }
-    .quiz-review-item.correct .quiz-review-dot {
-      color: #2ecc71;
-    }
-    .quiz-review-item.incorrect .quiz-review-dot {
-      color: #ff6b6b;
-    }
-    .quiz-review-question {
-      flex: 1;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-    .quiz-review-toggle {
-      font-size: 13px;
-      opacity: 0.5;
-      min-width: 14px;
-    }
-    .quiz-review-explanation {
-      display: none;
-      padding: 0 12px 10px 40px;
-      font-size: 13px;
-      line-height: 1.5;
-      opacity: 0.85;
-    }
-    .quiz-review-explanation.open {
-      display: block;
-    }
+    #summary-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 40; display: none; align-items: center; justify-content: center; }
+    #summary-box { background: #FFFDF5; border: 4px solid #000; box-shadow: 12px 12px 0px 0px #000; padding: 36px; max-width: 550px; width: 90%; color: #000; text-align: center; max-height: 85vh; overflow-y: auto; }
+    #summary-box h1 { font-size: 2rem; font-weight: 700; margin-bottom: 15px; text-transform: uppercase; }
+    #summary-stats { font-size: 1rem; font-weight: 700; margin-bottom: 20px; }
+    #summary-services { margin-bottom: 25px; max-width: 500px; }
+    #quiz-review { text-align: left; margin-bottom: 20px; max-height: 300px; overflow-y: auto; }
+    .quiz-review-item { margin-bottom: 8px; border: 3px solid #000; border-left: 8px solid; }
+    .quiz-review-item.correct { border-left-color: #4ecdc4; }
+    .quiz-review-item.incorrect { border-left-color: #FF6B6B; }
+    .quiz-review-header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; cursor: pointer; user-select: none; }
+    .quiz-review-header:hover { background: #FFD93D; }
+    .quiz-review-dot { font-size: 16px; font-weight: 700; min-width: 20px; }
+    .quiz-review-item.correct .quiz-review-dot { color: #000; }
+    .quiz-review-item.incorrect .quiz-review-dot { color: #000; }
+    .quiz-review-question { flex: 1; font-size: 14px; font-weight: 500; line-height: 1.4; }
+    .quiz-review-toggle { font-size: 13px; font-weight: 700; min-width: 14px; }
+    .quiz-review-explanation { display: none; padding: 0 12px 10px 40px; font-size: 13px; font-weight: 500; line-height: 1.5; }
+    .quiz-review-explanation.open { display: block; }
   </style>
 </head>
 <body>
@@ -624,6 +122,8 @@
     <h1>CLOUD RUNNER</h1>
     <p>Learn AWS while you run.</p>
     <button class="btn" id="how-to-play-btn">HOW TO PLAY</button>
+    <br><br>
+    <button class="btn" id="back-to-menu-btn" style="background: #FFD93D; margin-top: 12px;">← BACK TO MENU</button>
   </div>
 
   <div id="rules-screen">
@@ -673,6 +173,7 @@
     <p>Score: <span id="final-score">0</span></p>
     <p>Coins: <span id="final-coins">0</span></p>
     <button class="btn" id="continue-btn">CONTINUE</button>
+    <button class="btn" id="gameover-menu-btn" style="background: #FFD93D; margin-top: 12px;">← BACK TO MENU</button>
   </div>
 
   <div id="lesson-screen">
@@ -691,6 +192,7 @@
       <div id="summary-services"></div>
       <div id="quiz-review"></div>
       <button class="btn" id="restart-btn">PLAY AGAIN</button>
+      <button class="btn" id="summary-menu-btn" style="background: #FFD93D; margin-top: 12px;">← BACK TO MENU</button>
     </div>
   </div>
 
@@ -720,6 +222,20 @@
 
   <div id="loading">Loading models...</div>
 
-  <script type="module" src="/src/main.js"></script>
+  <!-- Pause overlay -->
+  <div id="pause-overlay" style="position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.75);">
+    <div style="background:#FFFDF5; border:4px solid #000; box-shadow:12px 12px 0px 0px #000; padding:40px; text-align:center; max-width:400px; width:90%;">
+      <h1 style="font-size:2.5rem; font-weight:700; text-transform:uppercase; margin-bottom:20px; color:#000;">⏸ PAUSED</h1>
+      <button class="btn" id="pause-resume-btn" style="margin-bottom:12px;">Continue</button><br>
+      <button class="btn" id="pause-exit-btn" style="background:#FFD93D;">← Back to Menu</button>
+    </div>
+  </div>
+
+  <!-- Countdown overlay -->
+  <div id="countdown-overlay" style="position:fixed; inset:0; z-index:55; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6);">
+    <span id="countdown-number" style="font-family:'Space Grotesk',sans-serif; font-size:8rem; font-weight:700; color:#FFFDF5; text-shadow:6px 6px 0px #000;"></span>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>

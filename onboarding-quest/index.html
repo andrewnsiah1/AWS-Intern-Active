@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Onboarding Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=block" rel="stylesheet" />
+<style>
+  :root { --bg:#FFFDF5; --ink:#000; --white:#FFF; --accent:#6ce3ff; --gold:#FFD93D; --text:#000; --muted:#444; --panel:#FFFDF5; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans-serif; overflow:hidden; -webkit-user-select:none; user-select:none; }
+  #wrap { position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  #stage { position:relative; width:min(96vw,170vh); aspect-ratio:16/9; border:4px solid var(--ink); overflow:hidden; background:#0b0e22; box-shadow:8px 8px 0px 0px var(--ink); }
+  canvas { display:block; width:100%; height:100%; }
+  #hud { position:absolute; top:0; left:0; right:0; display:flex; align-items:flex-start; justify-content:space-between; padding:12px 16px; pointer-events:none; font-weight:700; gap:10px; }
+  #hudLeft { display:flex; flex-direction:column; gap:8px; }
+  #progress { background:var(--panel); padding:6px 12px; display:flex; align-items:center; gap:12px; border:3px solid var(--ink); box-shadow:4px 4px 0px 0px var(--ink); }
+  #progress .bar { width:120px; height:8px; background:#ddd; overflow:hidden; border:2px solid var(--ink); }
+  #progress .bar>i { display:block; height:100%; width:0%; background:var(--accent); transition:width .3s ease; }
+  #abilities { display:flex; gap:8px; }
+  .ability { background:var(--panel); padding:4px 10px; font-size:12px; font-weight:700; text-transform:uppercase; border:3px solid var(--ink); box-shadow:3px 3px 0px 0px var(--ink); opacity:.35; transition:opacity .3s,transform .2s; }
+  .ability.on { opacity:1; }
+  .ability.pulse { transform:scale(1.15); }
+  .pill-btn { pointer-events:auto; background:var(--gold); color:var(--ink); border:3px solid var(--ink); padding:8px 14px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; text-transform:uppercase; cursor:pointer; box-shadow:4px 4px 0px 0px var(--ink); transition:transform .1s,box-shadow .1s; }
+  .pill-btn:hover { transform:translate(-1px,-1px); box-shadow:5px 5px 0px 0px var(--ink); }
+  .pill-btn:active { transform:translate(3px,3px); box-shadow:0 0 0 0 var(--ink); }
+  #toast { position:absolute; top:70px; left:50%; transform:translateX(-50%) translateY(-12px); background:var(--panel); border:4px solid var(--ink); box-shadow:6px 6px 0px 0px var(--ink); padding:10px 18px; font-weight:700; opacity:0; transition:opacity .2s,transform .2s; pointer-events:none; z-index:18; font-size:14px; text-transform:uppercase; }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .overlay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.75); padding:24px; z-index:20; }
+  .overlay.show { display:flex; }
+  .card { width:min(560px,92%); max-height:86%; overflow:auto; background:var(--panel); border:4px solid var(--ink); box-shadow:12px 12px 0px 0px var(--ink); padding:28px 28px 24px; }
+  .card h1 { font-size:1.5rem; font-weight:700; margin:0 0 8px; text-transform:uppercase; }
+  .card h2 { font-size:1.3rem; font-weight:700; margin:2px 0 12px; text-transform:uppercase; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; margin-bottom:12px; color:var(--ink); border:3px solid var(--ink); box-shadow:3px 3px 0px 0px var(--ink); }
+  .kindtag { display:inline-block; margin-left:8px; font-size:11px; padding:3px 8px; background:var(--gold); color:var(--ink); border:2px solid var(--ink); font-weight:700; text-transform:uppercase; vertical-align:middle; }
+  .blurb { color:var(--muted); line-height:1.6; margin:0 0 16px; font-weight:500; }
+  .details { list-style:none; padding:0; margin:0 0 18px; }
+  .details li { display:flex; gap:10px; padding:9px 0; border-bottom:2px solid rgba(0,0,0,.08); font-size:14px; font-weight:500; }
+  .details li .k { color:var(--muted); min-width:120px; font-weight:700; text-transform:uppercase; font-size:.7rem; letter-spacing:.05em; }
+  .details li .v { color:var(--ink); word-break:break-all; }
+  .details li a { color:var(--ink); text-decoration:none; font-weight:700; border-bottom:2px solid var(--ink); }
+  .details li a:hover { background:var(--gold); }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+  .btn { border:4px solid var(--ink); cursor:pointer; font-weight:700; font-size:14px; padding:12px 20px; font-family:'Space Grotesk',sans-serif; text-transform:uppercase; letter-spacing:.05em; color:var(--ink); background:var(--accent); text-decoration:none; display:inline-flex; align-items:center; gap:8px; box-shadow:6px 6px 0px 0px var(--ink); transition:transform .1s,box-shadow .1s; }
+  .btn:hover { transform:translate(-2px,-2px); box-shadow:8px 8px 0px 0px var(--ink); }
+  .btn:active { transform:translate(4px,4px); box-shadow:0 0 0 0 var(--ink); }
+  .btn.ghost { background:var(--white); color:var(--ink); border:3px solid var(--ink); box-shadow:4px 4px 0px 0px var(--ink); }
+  .btn.ghost:active { transform:translate(3px,3px); box-shadow:0 0 0 0 var(--ink); }
+  #checklist .card { width:min(640px,94%); }
+  .check-item { display:flex; align-items:center; gap:12px; padding:11px 4px; border-bottom:2px solid rgba(0,0,0,.08); }
+  .check-item .ic { font-size:20px; width:26px; text-align:center; flex:none; }
+  .check-item .title { flex:1; font-weight:500; }
+  .check-item .sub { font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; }
+  .check-item.locked { opacity:.45; }
+  .hero { text-align:center; }
+  .hero .big { font-size:2rem; font-weight:700; margin:0 0 10px; text-transform:uppercase; }
+  .hero p { color:var(--muted); max-width:470px; margin:0 auto 14px; line-height:1.6; font-weight:500; }
+  .legend { display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; text-align:left; max-width:440px; margin:0 auto 18px; font-size:14px; font-weight:500; }
+  .legend div { display:flex; gap:8px; align-items:center; }
+  .keys { display:inline-flex; gap:8px; margin:6px 0 18px; flex-wrap:wrap; justify-content:center; }
+  .key { background:var(--white); border:3px solid var(--ink); padding:6px 12px; font-weight:700; font-size:13px; box-shadow:3px 3px 0px 0px var(--ink); text-transform:uppercase; }
+  .rank { font-size:46px; margin:6px 0; }
+  .stats { color:var(--muted); margin-bottom:14px; font-weight:700; }
+  #touch { position:absolute; inset:auto 0 0 0; display:none; justify-content:space-between; padding:18px 22px; z-index:15; pointer-events:none; }
+  #touch .side { display:flex; gap:14px; }
+  #touch button { pointer-events:auto; width:62px; height:62px; border:3px solid var(--ink); background:var(--panel); color:var(--ink); font-size:24px; font-weight:700; box-shadow:4px 4px 0px 0px var(--ink); }
+  #touch button:active { background:var(--gold); transform:translate(3px,3px); box-shadow:0 0 0 0 var(--ink); }
+  @media(hover:none)and(pointer:coarse){#touch{display:flex;}}
+  .hint { position:absolute; bottom:12px; left:0; right:0; text-align:center; color:var(--muted); font-size:12px; font-weight:700; pointer-events:none; z-index:5; text-transform:uppercase; letter-spacing:.05em; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <canvas id="game" width="960" height="540"></canvas>
+
+    <div id="hud">
+      <div id="hudLeft">
+        <div id="progress">
+          <span>💎 <b id="count">0</b>/<span id="total">0</span></span>
+          <span class="bar"><i id="fill"></i></span>
+          <span>⭐ <b id="stars">0</b>/<span id="starsTotal">0</span></span>
+        </div>
+        <div id="abilities">
+          <span class="ability" id="abJump">🖥️ Double Jump</span>
+          <span class="ability" id="abSpeed">☕ Speed</span>
+        </div>
+      </div>
+      <button class="pill-btn" id="openList">📋 Resources</button>
+    </div>
+
+    <div id="toast"></div>
+
+    <div class="hint">← → / A D move · ↑ / Space / W jump (twice once unlocked) · collect gems, open the portal</div>
+
+    <div id="touch">
+      <div class="side"><button id="tLeft">◀</button><button id="tRight">▶</button></div>
+      <div class="side"><button id="tJump">▲</button></div>
+    </div>
+
+    <!-- Resource modal -->
+    <div class="overlay" id="modal">
+      <div class="card">
+        <span class="badge" id="mBadge">Category</span><span class="kindtag" id="mKind"></span>
+        <h1 id="mTitle">Title</h1>
+        <p class="blurb" id="mBlurb"></p>
+        <ul class="details" id="mDetails"></ul>
+        <div class="row">
+          <a class="btn" id="mLink" target="_blank" rel="noopener">Open link ↗</a>
+          <button class="btn ghost" id="mClose">Continue ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checklist hub -->
+    <div class="overlay" id="checklist">
+      <div class="card">
+        <h2>Onboarding Resources</h2>
+        <p class="blurb">Your all-in-one hub. Find a gem in the game to unlock its details — revisit anything anytime.</p>
+        <div id="checkItems"></div>
+        <div class="row" style="margin-top:16px;"><button class="btn ghost" id="closeList">Back to game</button></div>
+      </div>
+    </div>
+
+    <!-- Start -->
+    <div class="overlay show" id="start">
+      <div class="card hero">
+        <div class="big">🎒 Onboarding Quest</div>
+        <p>Welcome to the team! Journey across three zones — the Lobby, the Gap, and Campus — collecting the gear and knowledge you need for your first weeks.</p>
+        <div class="legend">
+          <div>💎 <span>Info — opens a resource</span></div>
+          <div>🪪 <span>Keycard — opens a locked gate</span></div>
+          <div>🖥️ <span>Power-up — new ability</span></div>
+          <div>⭐ <span>Bonus — boosts your rank</span></div>
+        </div>
+        <div class="keys">
+          <span class="key">← →</span><span class="key">A D</span><span class="key">↑ / Space</span><span class="key">Double-jump!</span>
+        </div>
+        <div class="row" style="justify-content:center;"><button class="btn" id="startBtn">Begin ▶</button> <button class="btn ghost" id="menuBtn" onclick="window.location.href='../'">← Menu</button></div>
+      </div>
+    </div>
+
+    <!-- Win -->
+    <div class="overlay" id="win">
+      <div class="card hero">
+        <div class="big">🎉 You're onboarded!</div>
+        <div class="rank" id="rankIcon">🥇</div>
+        <div class="stats" id="rankText"></div>
+        <p>Every resource is collected. Bookmark this page — it's your onboarding hub.</p>
+        <div id="winItems" style="text-align:left; margin-bottom:16px;"></div>
+        <div class="row" style="justify-content:center;"><button class="btn" id="replayBtn">Play again ↺</button> <button class="btn ghost" onclick="window.location.href='../'">← Menu</button></div>
+      </div>
+    </div>
+    <!-- Pause overlay -->
+    <div class="overlay" id="pauseScreen">
+      <div class="card hero">
+        <div class="big">⏸ PAUSED</div>
+        <div class="row" style="justify-content:center; margin-top:16px;"><button class="btn" id="pauseResumeBtn">Continue ▶</button> <button class="btn ghost" id="pauseExitBtn">← Menu</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ONBOARDING RESOURCES — EDIT THIS ARRAY TO CUSTOMIZE
+   ------------------------------------------------------------
+   kind:  "info"  -> just opens a card
+          "key"   -> opens the gate named in `opens`
+          "power" -> grants ability in `ability` ("doubleJump" | "speed")
+   spot:  {x,y}   -> gem position in the world
+   required: false to make it OPTIONAL for finishing (default true)
+   ============================================================ */
+const CATEGORY_COLORS = { Comms:"#f5c542", Docs:"#6ce3ff", Setup:"#7ef0a8", Team:"#c68bff", People:"#ff7ea8" };
+
+const RESOURCES = [
+  { title:"Daily Standup — Zoom Bridge", category:"Comms", kind:"info", icon:"📹", spot:{x:285,y:505},
+    blurb:"Our team's recurring video bridge. Join here every morning.",
+    url:"https://amazon.zoom.us/j/92943317832?pwd=toN7tUA8eJk0Do3aBBVVglUrKBC1o.1", linkLabel:"Join Zoom Meeting ↗",
+    details:[ {label:"Meeting URL", value:"amazon.zoom.us/j/92943317832", href:"https://amazon.zoom.us/j/92943317832?pwd=toN7tUA8eJk0Do3aBBVVglUrKBC1o.1"},
+              {label:"Meeting ID", value:"929 4331 7832"}, {label:"Passcode", value:"56673427"},
+              {label:"Dial-in (US)", value:"877 853 5247 (toll free)"} ] },
+
+  { title:"Building Badge & Access", category:"Setup", kind:"key", opens:"lobby", icon:"🪪", spot:{x:405,y:185},
+    blurb:"Your badge unlocks the building — grab it to open the lobby gate!",
+    details:[ {label:"Action", value:"Request badge + door access on day 1"},
+              {label:"In-game", value:"Opens the Lobby gate 🔓"} ] },
+
+  { title:"Cloud Desktop", category:"Setup", kind:"power", ability:"doubleJump", icon:"🖥️", spot:{x:700,y:485},
+    blurb:"Your dev machine — it makes you far more capable. Grants a DOUBLE JUMP.",
+    url:"https://builderhub.corp.amazon.com/", linkLabel:"Set up a Cloud Desktop ↗",
+    details:[ {label:"Ability", value:"Double Jump — press jump again in mid-air"},
+              {label:"Why", value:"Reach high platforms and clear the Gap"} ] },
+
+  { title:"BuilderHub", category:"Setup", kind:"info", icon:"🧰", spot:{x:1320,y:505},
+    blurb:"Create packages & apps, spin up tooling, find templates.",
+    url:"https://builderhub.corp.amazon.com/", linkLabel:"Open BuilderHub ↗" },
+
+  { title:"Brazil Build System", category:"Docs", kind:"info", icon:"📦", spot:{x:1620,y:245},
+    blurb:"Workspaces, packages, version sets, and build commands.",
+    url:"https://docs.hub.amazon.dev/brazil/", linkLabel:"Read Brazil docs ↗" },
+
+  { title:"Coffee & Team Culture", category:"Team", kind:"power", ability:"speed", required:false, icon:"☕", spot:{x:1800,y:505},
+    blurb:"Optional pick-me-up — grants a SPEED boost. Slow down and meet people!",
+    details:[ {label:"Ability", value:"Speed — move noticeably faster"},
+              {label:"Note", value:"Optional — but it's a nice-to-have ☕"} ] },
+
+  { title:"Team Chat Channels", category:"Comms", kind:"info", icon:"💬", spot:{x:2000,y:505},
+    blurb:"Where the team talks. Introduce yourself in the main channel!",
+    details:[ {label:"Main", value:"#your-team-name"}, {label:"Help", value:"#your-team-help"}, {label:"Social", value:"#your-team-random"} ] },
+
+  { title:"Repo & Code Access", category:"Setup", kind:"key", opens:"campus", icon:"🔑", spot:{x:2140,y:215},
+    blurb:"Access to the team's code repos — opens the Campus gate!",
+    details:[ {label:"Action", value:"Request repo/package permissions"}, {label:"In-game", value:"Opens the Campus gate 🔓"} ] },
+
+  { title:"Meet Your Manager (1:1)", category:"People", kind:"info", icon:"🧑‍💼", spot:{x:2400,y:505},
+    blurb:"Your recurring 1:1 — add topics and questions here.",
+    details:[ {label:"Manager", value:"Add name"}, {label:"Cadence", value:"Weekly, 30 min"}, {label:"Doc", value:"Add Quip/doc link"} ] },
+
+  { title:"First-Week Checklist", category:"Team", kind:"info", icon:"✅", spot:{x:2560,y:405},
+    blurb:"Knock these out in your first days.",
+    details:[ {label:"Day 1", value:"Laptop, badge, access requests"}, {label:"Day 2", value:"Cloud Desktop + Brazil workspace"},
+              {label:"Day 3", value:"Meet your onboarding buddy"}, {label:"Week 1", value:"Ship a tiny starter CR"} ] },
+
+  { title:"Team Wiki", category:"Docs", kind:"info", icon:"📚", spot:{x:2680,y:505},
+    blurb:"Home base for docs, runbooks, and how-tos.",
+    url:"https://w.amazon.com/", linkLabel:"Open Team Wiki ↗" },
+];
+
+/* ---------- World geometry ---------- */
+const WORLD_W = 2900, WORLD_H = 720, VIEW_W = 960, VIEW_H = 540, FLOOR = 620;
+
+const PLATFORMS = [
+  // ground segments (gap between 1010 and 1230 = the Pit)
+  { x:-60, y:FLOOR, w:1070, h:140, ground:true },
+  { x:1230, y:FLOOR, w:1730, h:140, ground:true },
+  // Zone 1 — Lobby
+  { x:220, y:540, w:130, h:16 },
+  { x:430, y:440, w:110, h:16 },
+  { x:630, y:520, w:150, h:16 },   // Cloud Desktop
+  { x:520, y:360, w:110, h:16 },
+  { x:340, y:220, w:140, h:16 },   // Badge (high — needs double jump)
+  // Zone 2 — the Gap
+  { x:1250, y:540, w:150, h:16 },  // BuilderHub
+  { x:1560, y:280, w:140, h:16 },  // Brazil (reach via elevator)
+  // Zone 3 — Campus
+  { x:1740, y:540, w:120, h:16 },  // Coffee
+  { x:1940, y:540, w:130, h:16 },  // Team Chat
+  { x:1980, y:430, w:100, h:16 },
+  { x:2060, y:340, w:100, h:16 },
+  { x:2080, y:250, w:140, h:16 },  // Repo key
+  { x:2340, y:540, w:120, h:16 },  // Manager
+  { x:2500, y:440, w:120, h:16 },  // Checklist
+  { x:2620, y:540, w:130, h:16 },  // Wiki
+];
+
+const MOVERS = [ // vertical elevator to reach Brazil docs
+  { x:1470, y:540, w:120, h:16, y0:300, y1:545, dir:1, speed:1.0, dx:0, dy:0 },
+];
+
+const GATES = [
+  { id:"lobby",  label:"Building Badge", x:900,  y:340, w:38, h:280, open:false },
+  { id:"campus", label:"Repo Access",   x:2250, y:340, w:38, h:280, open:false },
+];
+
+const KILLZONES = [ { x:1000, y:680, w:240, h:200 } ]; // the Pit
+
+const CHECKPOINTS = [ {x:40,y:576}, {x:960,y:576}, {x:1260,y:576}, {x:2320,y:576} ];
+
+const STARS = [
+  {x:150,y:560}, {x:480,y:405}, {x:400,y:150}, {x:1120,y:470},
+  {x:1620,y:210}, {x:1500,y:360}, {x:2150,y:180}, {x:2690,y:560},
+];
+
+const PORTAL = { x:2760, y:500, w:50, h:120 };
+
+/* ============================================================
+   ENGINE
+   ============================================================ */
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const GRAVITY=0.7, MOVE=4.5, SPEED_MOVE=6.6, JUMP=-15.4, JUMP2=-14.2, MAX_FALL=18;
+
+let state="start", player, gems, stars, particles, keys, camX=0, camY=0, tNow=0, falls=0, curCP=0;
+
+function initEntities() {
+  gems = RESOURCES.map((r,i)=>({
+    res:r, index:i, x:r.spot.x, y:r.spot.y, w:30, h:36, collected:false,
+    color: CATEGORY_COLORS[r.category] || "#6ce3ff", bob: i*0.7,
+    required: r.required !== false,
+  }));
+  stars = STARS.map((s,i)=>({ x:s.x, y:s.y, r:11, taken:false, bob:i*0.9 }));
+  GATES.forEach(g=>g.open=false);
+  MOVERS.forEach(m=>{ m.y=m.y1; m.dir=-1; m.dx=0; m.dy=0; });
+}
+
+function reset() {
+  curCP=0; falls=0;
+  player = { x:CHECKPOINTS[0].x, y:CHECKPOINTS[0].y, w:30, h:44, vx:0, vy:0,
+             onGround:false, jumps:0, hasDoubleJump:false, hasSpeed:false, face:1 };
+  particles=[]; keys={left:false,right:false,jump:false,jumpPrev:false};
+  camX=0; camY=180;
+  initEntities();
+  updateAbilityHUD(); updateHUD();
+}
+
+const requiredGems = ()=> gems.filter(g=>g.required);
+function requiredCollected(){ return requiredGems().filter(g=>g.collected).length; }
+function allRequired(){ return requiredGems().every(g=>g.collected); }
+function starsTaken(){ return stars.filter(s=>s.taken).length; }
+
+/* ---------- input ---------- */
+const keymap = { ArrowLeft:"left", KeyA:"left", ArrowRight:"right", KeyD:"right", ArrowUp:"jump", KeyW:"jump", Space:"jump" };
+addEventListener("keydown", e=>{ const k=keymap[e.code]; if(k){ e.preventDefault(); keys[k]=true; } });
+addEventListener("keyup",   e=>{ const k=keymap[e.code]; if(k){ e.preventDefault(); keys[k]=false; } });
+function bindTouch(id,key){
+  const el=document.getElementById(id);
+  const on=e=>{e.preventDefault(); keys[key]=true;}, off=e=>{e.preventDefault(); keys[key]=false;};
+  el.addEventListener("touchstart",on,{passive:false}); el.addEventListener("touchend",off,{passive:false});
+  el.addEventListener("mousedown",on); el.addEventListener("mouseup",off); el.addEventListener("mouseleave",off);
+}
+bindTouch("tLeft","left"); bindTouch("tRight","right"); bindTouch("tJump","jump");
+
+/* ---------- physics ---------- */
+const overlap=(a,b)=> a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
+
+function solids(){
+  const arr = PLATFORMS.concat(MOVERS);
+  for(const g of GATES) if(!g.open) arr.push(g);
+  return arr;
+}
+
+function update(){
+  if(state!=="play") return;
+
+  // moving platforms
+  let rider=null;
+  for(const m of MOVERS){
+    // is player standing on it (before we move it)?
+    if(player.vy>=0 && player.x+player.w>m.x && player.x<m.x+m.w && Math.abs((player.y+player.h)-m.y)<=6) rider=m;
+    const ny = m.y + m.dir*m.speed;
+    m.dy = 0; m.dx = 0;
+    if(ny<=m.y0){ m.dir=1; } else if(ny>=m.y1){ m.dir=-1; }
+    const y2 = m.y + m.dir*m.speed; m.dy = y2 - m.y; m.y = y2;
+  }
+  if(rider){ player.y += rider.dy; player.x += rider.dx; }
+
+  const S = solids();
+
+  // horizontal
+  const spd = player.hasSpeed ? SPEED_MOVE : MOVE;
+  player.vx = 0;
+  if(keys.left){ player.vx=-spd; player.face=-1; }
+  if(keys.right){ player.vx= spd; player.face= 1; }
+
+  // jump (edge triggered) with double jump
+  const maxJumps = player.hasDoubleJump ? 2 : 1;
+  const edge = keys.jump && !keys.jumpPrev;
+  if(edge && player.jumps < maxJumps){
+    player.vy = (player.jumps===0) ? JUMP : JUMP2;
+    player.jumps++; player.onGround=false;
+    if(player.jumps===2) puff(player.x+player.w/2, player.y+player.h, "#6ce3ff");
+    playBeep(player.jumps===1?520:680, 0.06);
+  }
+  keys.jumpPrev = keys.jump;
+
+  player.vy = Math.min(player.vy+GRAVITY, MAX_FALL);
+
+  // move X + resolve
+  player.x += player.vx;
+  player.x = Math.max(0, Math.min(WORLD_W-player.w, player.x));
+  for(const p of S){ if(overlap(player,p)){
+    if(player.vx>0) player.x=p.x-player.w; else if(player.vx<0) player.x=p.x+p.w;
+  }}
+
+  // move Y + resolve
+  player.y += player.vy;
+  player.onGround=false;
+  for(const p of S){ if(overlap(player,p)){
+    if(player.vy>0){ player.y=p.y-player.h; player.vy=0; player.onGround=true; player.jumps=0; }
+    else if(player.vy<0){ player.y=p.y+p.h; player.vy=0; }
+  }}
+
+  // checkpoints
+  for(let i=0;i<CHECKPOINTS.length;i++){
+    if(player.onGround && player.x>=CHECKPOINTS[i].x && i>curCP) curCP=i;
+  }
+
+  // kill zones / falling
+  let dead = player.y>WORLD_H+80;
+  for(const kz of KILLZONES) if(overlap(player,kz)) dead=true;
+  if(dead) respawn();
+
+  // gems
+  for(const g of gems){ if(g.collected) continue;
+    const box={x:g.x-g.w/2,y:g.y-g.h/2,w:g.w,h:g.h};
+    if(overlap(player,box)) collectGem(g);
+  }
+  // stars
+  for(const s of stars){ if(s.taken) continue;
+    if(overlap(player,{x:s.x-s.r,y:s.y-s.r,w:s.r*2,h:s.r*2})) collectStar(s);
+  }
+
+  // portal
+  if(overlap(player,PORTAL)){
+    if(allRequired()) winGame();
+    else { const miss=requiredGems().filter(g=>!g.collected).length; hintPortal(miss); }
+  }
+
+  // particles
+  for(const pt of particles){ pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.25; pt.life--; }
+  particles = particles.filter(pt=>pt.life>0);
+
+  // camera
+  const tx = Math.max(0, Math.min(WORLD_W-VIEW_W, player.x+player.w/2 - VIEW_W/2));
+  const ty = Math.max(0, Math.min(WORLD_H-VIEW_H, player.y+player.h/2 - VIEW_H*0.6));
+  camX += (tx-camX)*0.12; camY += (ty-camY)*0.12;
+}
+
+let portalHintAt=-9999;
+function hintPortal(miss){
+  if(tNow-portalHintAt>1500){ portalHintAt=tNow; toast(`🔒 Portal locked — ${miss} resource${miss>1?"s":""} to go`); }
+}
+function respawn(){
+  falls++; playBeep(180,0.12);
+  const cp=CHECKPOINTS[curCP];
+  player.x=cp.x; player.y=cp.y; player.vx=0; player.vy=0; player.jumps=0;
+  toast("↺ Back to checkpoint");
+}
+
+function collectGem(g){
+  g.collected=true;
+  playBeep(660,0.08); playBeep(990,0.09,0.06);
+  burst(g.x,g.y,g.color);
+  const r=g.res;
+  if(r.kind==="key"){ const gate=GATES.find(x=>x.id===r.opens); if(gate){ gate.open=true; toast(`🔓 ${gate.label} — gate opened!`);} }
+  if(r.kind==="power"){
+    if(r.ability==="doubleJump"){ player.hasDoubleJump=true; toast("🖥️ Double Jump unlocked!"); pulseAbility("abJump"); }
+    if(r.ability==="speed"){ player.hasSpeed=true; toast("☕ Speed boost!"); pulseAbility("abSpeed"); }
+    updateAbilityHUD();
+  }
+  updateHUD();
+  openResource(g.index);
+}
+function collectStar(s){ s.taken=true; playBeep(1200,0.07); burst(s.x,s.y,"#f5c542",8); toast("⭐ Bonus star!"); updateHUD(); }
+
+/* ---------- fx ---------- */
+function burst(x,y,color,n=14){ for(let i=0;i<n;i++){ const a=(Math.PI*2*i)/n; particles.push({x,y,vx:Math.cos(a)*(1.5+i%3),vy:Math.sin(a)*(1.5+i%3)-1,life:34,color}); } }
+function puff(x,y,color){ for(let i=0;i<8;i++){ const a=Math.PI+(i/7)*Math.PI; particles.push({x,y,vx:Math.cos(a)*2,vy:Math.abs(Math.sin(a))*-1.5,life:20,color}); } }
+
+/* ---------- rendering ---------- */
+function draw(){
+  drawBackground();
+  ctx.save();
+  ctx.translate(-Math.round(camX), -Math.round(camY));
+
+  // platforms (flat)
+  for(const p of PLATFORMS){
+    ctx.fillStyle = p.ground ? "#2b3168" : "#39407e";
+    roundRect(p.x,p.y,p.w,p.h, p.ground?0:4); ctx.fill();
+  }
+  // movers (flat)
+  for(const m of MOVERS){ ctx.fillStyle="#5a63bf"; roundRect(m.x,m.y,m.w,m.h,4); ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.4)"; ctx.font="12px system-ui"; ctx.textAlign="center"; ctx.fillText("▲ ▼", m.x+m.w/2, m.y+12); }
+
+  // gates
+  for(const g of GATES) drawGate(g);
+  // portal
+  drawPortal();
+  // stars
+  for(const s of stars) if(!s.taken) drawStar(s);
+  // gems
+  for(const g of gems) if(!g.collected) drawGem(g);
+  // particles
+  for(const pt of particles){ ctx.globalAlpha=Math.max(0,pt.life/34); ctx.fillStyle=pt.color;
+    ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1; }
+  // player
+  drawPlayer();
+  // zone signs
+  drawSign(120,"Lobby"); drawSign(1350,"The Gap"); drawSign(2050,"Campus");
+
+  ctx.restore();
+}
+
+function drawBackground(){
+  // flat sky
+  ctx.fillStyle="#171b3d"; ctx.fillRect(0,0,VIEW_W,VIEW_H);
+  // flat sun (solid disc)
+  const sx=760-camX*0.15;
+  ctx.fillStyle="#3a3f6e"; ctx.beginPath(); ctx.arc(sx,110,60,0,Math.PI*2); ctx.fill();
+  // parallax hills (flat colors)
+  const hy=VIEW_H-70;
+  for(let i=0;i<8;i++){ const hx=i*420 - (camX*0.25)%420; hill(hx,hy+10,"#141833"); hill(hx+210,hy+30,"#1a2050"); }
+  // clouds (flat)
+  ctx.fillStyle="rgba(255,255,255,0.05)";
+  for(let i=0;i<6;i++){ const cx=(i*360 - camX*0.4)%(VIEW_W+300)-100; cloud(cx,90+(i%3)*40, 1+(i%2)*0.3); }
+  // building silhouettes mid (flat)
+  ctx.fillStyle="#12163a";
+  for(let i=0;i<12;i++){ const bx=i*260-(camX*0.5)%260; const bh=120+((i*53)%90); ctx.fillRect(bx,VIEW_H-bh-40,90,bh); }
+}
+function hill(x,y,c){ ctx.fillStyle=c; ctx.beginPath(); ctx.moveTo(x-40,VIEW_H); ctx.quadraticCurveTo(x+140,y,x+320,VIEW_H); ctx.closePath(); ctx.fill(); }
+function cloud(x,y,s){ ctx.beginPath(); ctx.arc(x,y,22*s,0,Math.PI*2); ctx.arc(x+26*s,y+6,18*s,0,Math.PI*2); ctx.arc(x-24*s,y+6,16*s,0,Math.PI*2); ctx.fill(); }
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function drawSign(x,label){
+  ctx.save(); ctx.fillStyle="rgba(255,255,255,.12)"; ctx.font="bold 40px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(label, x, 120); ctx.restore();
+}
+
+function drawGem(g){
+  const bob=Math.sin(tNow/500+g.bob)*6, cx=g.x, cy=g.y+bob, hw=g.w/2, hh=g.h/2;
+  ctx.save();
+  // flat diamond fill + outline
+  ctx.fillStyle=g.color; ctx.beginPath();
+  ctx.moveTo(cx,cy-hh); ctx.lineTo(cx+hw,cy-hh*0.2); ctx.lineTo(cx,cy+hh); ctx.lineTo(cx-hw,cy-hh*0.2); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=shade(g.color,-45); ctx.lineWidth=2; ctx.stroke();
+  // icon
+  ctx.font="15px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillStyle="#0b0e22";
+  ctx.fillText(g.res.icon||"", cx, cy-2);
+  // ring for key/power to signal "special"
+  if(g.res.kind!=="info"){ ctx.strokeStyle="rgba(255,255,255,.55)"; ctx.setLineDash([3,4]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(cx,cy,hw+9,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
+  ctx.restore();
+}
+function drawStar(s){
+  const bob=Math.sin(tNow/400+s.bob)*4, cx=s.x, cy=s.y+bob;
+  ctx.save(); ctx.translate(cx,cy); ctx.rotate(tNow/1200); ctx.fillStyle="#f5c542";
+  ctx.beginPath(); for(let i=0;i<5;i++){ const a=-Math.PI/2+i*2*Math.PI/5; ctx.lineTo(Math.cos(a)*s.r,Math.sin(a)*s.r);
+    const a2=a+Math.PI/5; ctx.lineTo(Math.cos(a2)*s.r*0.45,Math.sin(a2)*s.r*0.45); } ctx.closePath(); ctx.fill();
+  ctx.strokeStyle=shade("#f5c542",-50); ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
+}
+function drawGate(g){
+  const cx=g.x+g.w/2;
+  if(g.open){
+    ctx.save(); ctx.globalAlpha=.35; ctx.fillStyle="#7ef0c8"; roundRect(g.x,g.y,g.w,10,4); ctx.fill(); ctx.restore();
+    return;
+  }
+  ctx.save(); ctx.fillStyle="#6b2f3a"; roundRect(g.x,g.y,g.w,g.h,6); ctx.fill();
+  ctx.strokeStyle="#c78"; ctx.lineWidth=2;
+  for(let y=g.y+12;y<g.y+g.h;y+=22){ ctx.beginPath(); ctx.moveTo(g.x+4,y); ctx.lineTo(g.x+g.w-4,y); ctx.stroke(); }
+  // label above
+  ctx.fillStyle="rgba(255,255,255,.85)"; ctx.font="bold 13px system-ui"; ctx.textAlign="center";
+  ctx.fillText("🔒 "+g.label, cx, g.y-10);
+  ctx.restore();
+}
+function drawPortal(){
+  const on=allRequired(), cx=PORTAL.x+PORTAL.w/2, cy=PORTAL.y+PORTAL.h/2;
+  ctx.save();
+  ctx.fillStyle = on ? "#7ef0c8" : "#2c3266";
+  roundRect(PORTAL.x,PORTAL.y,PORTAL.w,PORTAL.h,6); ctx.fill();
+  if(on){ ctx.strokeStyle="#6ce3ff"; ctx.lineWidth=2; roundRect(PORTAL.x,PORTAL.y,PORTAL.w,PORTAL.h,6); ctx.stroke(); }
+  ctx.fillStyle=on?"#0b0e22":"rgba(255,255,255,.3)"; ctx.font="24px system-ui"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(on?"🚪":"🔒", cx, cy);
+  ctx.fillStyle="rgba(255,255,255,.7)"; ctx.font="bold 12px system-ui"; ctx.fillText("YOUR DESK", cx, PORTAL.y-10);
+  ctx.restore();
+}
+function drawPlayer(){
+  const p=player, cx=p.x+p.w/2;
+  ctx.save();
+  ctx.fillStyle="#ff7a45"; roundRect(p.x,p.y+14,p.w,p.h-14,4); ctx.fill();
+  ctx.fillStyle="#ffe0c2"; ctx.beginPath(); ctx.arc(cx,p.y+12,11,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#6ce3ff"; ctx.fillRect(cx-5,p.y+22,10,8); // lanyard
+  ctx.fillStyle="#25305a"; const ex=cx+p.face*3;
+  ctx.beginPath(); ctx.arc(ex-3,p.y+11,1.8,0,Math.PI*2); ctx.arc(ex+3,p.y+11,1.8,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+function shade(hex,amt){ const n=parseInt(hex.slice(1),16); let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
+
+/* ---------- audio ---------- */
+let actx;
+function playBeep(freq,dur,delay=0){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  const o=actx.createOscillator(), gv=actx.createGain(); o.frequency.value=freq; o.type="triangle";
+  o.connect(gv); gv.connect(actx.destination); const t=actx.currentTime+delay;
+  gv.gain.setValueAtTime(0.0001,t); gv.gain.exponentialRampToValueAtTime(0.14,t+0.01); gv.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.start(t); o.stop(t+dur+0.02);}catch(e){} }
+
+/* ---------- HUD / panels ---------- */
+const el=id=>document.getElementById(id);
+function updateHUD(){
+  el("count").textContent=requiredCollected(); el("total").textContent=requiredGems().length;
+  el("fill").style.width=(requiredCollected()/requiredGems().length*100)+"%";
+  el("stars").textContent=starsTaken(); el("starsTotal").textContent=stars.length;
+}
+function updateAbilityHUD(){
+  el("abJump").classList.toggle("on", !!player.hasDoubleJump);
+  el("abSpeed").classList.toggle("on", !!player.hasSpeed);
+}
+function pulseAbility(id){ const e=el(id); e.classList.add("pulse"); setTimeout(()=>e.classList.remove("pulse"),250); }
+
+let toastTimer;
+function toast(msg){ const t=el("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),1600); }
+
+const KIND_LABEL={info:"💎 Info",key:"🪪 Keycard",power:"🖥️ Power-up"};
+function openResource(i){
+  const r=RESOURCES[i], color=CATEGORY_COLORS[r.category]||"#6ce3ff";
+  el("mBadge").textContent=r.category; el("mBadge").style.background=color;
+  el("mKind").textContent=KIND_LABEL[r.kind]||"";
+  el("mTitle").textContent=(r.icon?r.icon+" ":"")+r.title;
+  el("mBlurb").textContent=r.blurb||"";
+  const list=el("mDetails"); list.innerHTML="";
+  (r.details||[]).forEach(d=>{ const li=document.createElement("li");
+    const k=document.createElement("span"); k.className="k"; k.textContent=d.label;
+    const v=document.createElement("span"); v.className="v";
+    if(d.href){ const a=document.createElement("a"); a.href=d.href; a.target="_blank"; a.rel="noopener"; a.textContent=d.value; v.appendChild(a); }
+    else v.textContent=d.value;
+    li.appendChild(k); li.appendChild(v); list.appendChild(li); });
+  const link=el("mLink");
+  if(r.url){ link.style.display="inline-flex"; link.href=r.url; link.textContent=r.linkLabel||"Open link ↗"; } else link.style.display="none";
+  if(state!=="win") state="modal";
+  show("modal");
+}
+function buildChecklist(){
+  const box=el("checkItems"); box.innerHTML="";
+  gems.forEach(g=>{ const r=g.res; const row=document.createElement("div");
+    row.className="check-item"+(g.collected?"":" locked");
+    const ic=document.createElement("span"); ic.className="ic"; ic.textContent=r.icon||"💎";
+    const mid=document.createElement("span"); mid.className="title";
+    const t=document.createElement("div"); t.textContent=(g.collected?"":"🔒 ")+r.title;
+    const sub=document.createElement("div"); sub.className="sub"; sub.textContent=(KIND_LABEL[r.kind]||"")+" · "+r.category+(g.required?"":" · optional");
+    mid.append(t,sub);
+    const btn=document.createElement("button"); btn.className="pill-btn";
+    if(g.collected){ btn.textContent="View"; btn.onclick=()=>openResource(g.index); }
+    else { btn.textContent="Locked"; btn.disabled=true; btn.style.opacity=.5; }
+    row.append(ic,mid,btn); box.appendChild(row); });
+}
+function buildWinList(){
+  const box=el("winItems"); box.innerHTML="";
+  gems.forEach(g=>{ const row=document.createElement("div"); row.className="check-item";
+    const ic=document.createElement("span"); ic.className="ic"; ic.textContent=g.res.icon||"💎";
+    const title=document.createElement("span"); title.className="title"; title.textContent=g.res.title;
+    const btn=document.createElement("button"); btn.className="pill-btn"; btn.textContent="View"; btn.onclick=()=>openResource(g.index);
+    row.append(ic,title,btn); box.appendChild(row); });
+}
+function winGame(){ if(questBgm){ questBgm.pause(); questBgm.currentTime=0; }
+  state="win"; playBeep(523,.12); playBeep(659,.12,.12); playBeep(784,.18,.24);
+  const sc=starsTaken(), tot=stars.length;
+  let icon="🥉", label="Bronze — you made it!";
+  if(sc===tot && falls===0){ icon="🥇"; label="Gold — flawless run!"; }
+  else if(sc>=Math.ceil(tot*0.6)){ icon="🥈"; label="Silver — great exploring!"; }
+  el("rankIcon").textContent=icon;
+  el("rankText").textContent=`${label}  ·  ⭐ ${sc}/${tot} stars  ·  ${falls} fall${falls===1?"":"s"}`;
+  buildWinList(); show("win");
+}
+
+/* ---------- overlays ---------- */
+function show(id){ document.querySelectorAll(".overlay").forEach(o=>o.classList.remove("show")); if(id) el(id).classList.add("show"); }
+function resume(){ show(null); state="play"; }
+let questBgm; function startQuestMusic(){ if(!questBgm){ questBgm=new Audio("./music/bgm.mp3"); questBgm.loop=true; questBgm.volume=0.3; } questBgm.currentTime=0; questBgm.play().catch(()=>{}); } el("startBtn").onclick=()=>{ reset(); resume(); startQuestMusic(); };
+el("mClose").onclick=()=>{ if(state==="win") show("win"); else resume(); };
+el("openList").onclick=()=>{ if(state==="play"){ state="list"; buildChecklist(); show("checklist"); } };
+el("closeList").onclick=()=>resume();
+el("replayBtn").onclick=()=>{ reset(); resume(); };
+const modal=el("modal"); modal.addEventListener("click",e=>{ if(e.target===modal) el("mClose").click(); });
+
+/* ---------- loop ---------- */
+reset();
+function frame(t){ tNow=t; if(state==="play") update(); draw(); requestAnimationFrame(frame); }
+requestAnimationFrame(frame);
+
+el("pauseResumeBtn").onclick=()=>{ show(null); state="play"; if(questBgm) questBgm.play().catch(()=>{}); };
+el("pauseExitBtn").onclick=()=>{ if(questBgm){ questBgm.pause(); } window.location.href="../"; };
+document.addEventListener("keydown",(e)=>{ if(e.key==="Escape"){ if(state==="play"){ state="paused"; show("pauseScreen"); if(questBgm) questBgm.pause(); } else if(state==="paused"){ show(null); state="play"; if(questBgm) questBgm.play().catch(()=>{}); } } });
+</script>
+</body>
+</html>

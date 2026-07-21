@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning Games – Choose Your Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=block" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #FFFDF5;
+      --ink: #000000;
+      --accent: #FF6B6B;
+      --secondary: #FFD93D;
+      --muted: #C4B5FD;
+      --white: #FFFFFF;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Background texture - halftone dots */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(#000 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 48px;
+    }
+
+    .header h1 {
+      font-size: 4rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      line-height: 0.9;
+      margin-bottom: 16px;
+    }
+
+    .header h1 .highlight {
+      display: inline-block;
+      background: var(--secondary);
+      border: 4px solid var(--ink);
+      padding: 4px 16px;
+      box-shadow: 4px 4px 0px 0px var(--ink);
+      transform: rotate(-2deg);
+    }
+
+    .subtitle {
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      opacity: 1;
+    }
+
+    /* Decorative star */
+    .deco-star {
+      position: absolute;
+      font-size: 2rem;
+      animation: spin-slow 10s linear infinite;
+    }
+
+    .deco-star.top-right {
+      top: -10px;
+      right: 60px;
+    }
+
+    .deco-star.bottom-left {
+      bottom: 20px;
+      left: 40px;
+    }
+
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Games Container */
+    .games-container {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    /* Game Card */
+    .game-card {
+      position: relative;
+      background: var(--white);
+      border: 4px solid var(--ink);
+      padding: 0;
+      width: 320px;
+      cursor: pointer;
+      transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      box-shadow: 8px 8px 0px 0px var(--ink);
+    }
+
+    .game-card:hover {
+      transform: translate(-4px, -4px);
+      box-shadow: 12px 12px 0px 0px var(--ink);
+    }
+
+    .games-container:hover .game-card:not(:hover) {
+      transform: translate(2px, 2px);
+      box-shadow: 4px 4px 0px 0px var(--ink);
+      opacity: 0.7;
+    }
+
+    /* Card Header */
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 4px solid var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .game-card.runner .card-header {
+      background: var(--accent);
+    }
+
+    .game-card.blast .card-header {
+      background: var(--muted);
+    }
+
+    .game-card.quest .card-header {
+      background: var(--secondary);
+    }
+
+    .card-header .game-icon {
+      font-size: 2rem;
+    }
+
+    .card-header .game-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+    }
+
+    /* Card number badge */
+    .card-number {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      width: 48px;
+      height: 48px;
+      background: var(--secondary);
+      border: 4px solid var(--ink);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      box-shadow: 3px 3px 0px 0px var(--ink);
+      transform: rotate(8deg);
+    }
+
+    /* Card Body */
+    .card-body {
+      padding: 20px 24px;
+      flex: 1;
+    }
+
+    .game-tagline {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    /* Synopsis */
+    .game-synopsis {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.3s ease-out, opacity 0.2s ease-out, margin 0.3s ease-out;
+      margin-top: 0;
+    }
+
+    .game-card:hover .game-synopsis {
+      max-height: 220px;
+      opacity: 1;
+      margin-top: 12px;
+    }
+
+    .synopsis-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .synopsis-list li {
+      padding: 6px 0;
+      padding-left: 28px;
+      position: relative;
+      font-size: 0.9rem;
+      font-weight: 500;
+      line-height: 1.5;
+      border-bottom: 2px solid rgba(0,0,0,0.06);
+    }
+
+    .synopsis-list li:last-child {
+      border-bottom: none;
+    }
+
+    .synopsis-list li::before {
+      content: attr(data-icon);
+      position: absolute;
+      left: 0;
+      font-size: 1rem;
+    }
+
+    /* Tags */
+    .game-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      padding: 4px 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border: 3px solid var(--ink);
+      background: var(--bg);
+    }
+
+    .game-card.runner .tag {
+      background: #ffe0e0;
+    }
+
+    .game-card.blast .tag {
+      background: #ede9fe;
+    }
+
+    .game-card.quest .tag {
+      background: #fef3c7;
+    }
+
+    /* Play button */
+    .play-hint {
+      display: block;
+      padding: 14px 24px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: center;
+      border-top: 4px solid var(--ink);
+      transition: background 0.1s ease-out;
+    }
+
+    .game-card.runner .play-hint {
+      background: var(--accent);
+    }
+
+    .game-card.blast .play-hint {
+      background: var(--muted);
+    }
+
+    .game-card.quest .play-hint {
+      background: var(--secondary);
+    }
+
+    .game-card:hover .play-hint {
+      background: var(--secondary);
+    }
+
+    .game-card:active {
+      transform: translate(4px, 4px);
+      box-shadow: 0px 0px 0px 0px var(--ink);
+    }
+
+    .game-card:active .play-hint {
+      background: var(--ink);
+      color: var(--white);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      padding: 12px 24px;
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border: 4px solid var(--ink);
+      box-shadow: 4px 4px 0px 0px var(--secondary);
+      transform: rotate(1deg);
+    }
+
+    /* Responsive */
+    @media (max-width: 1060px) {
+      .game-card {
+        width: 280px;
+      }
+    }
+
+    @media (max-width: 920px) {
+      .games-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+      }
+
+      .game-card {
+        width: 100%;
+        max-width: 380px;
+      }
+
+      .header h1 {
+        font-size: 2.8rem;
+      }
+
+      .games-container:hover .game-card:not(:hover) {
+        transform: translate(1px, 1px);
+        box-shadow: 6px 6px 0px 0px var(--ink);
+        opacity: 0.8;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 2.2rem;
+      }
+
+      .game-card {
+        box-shadow: 6px 6px 0px 0px var(--ink);
+      }
+
+      .card-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+        top: -12px;
+        right: -12px;
+      }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .deco-star {
+        animation: none;
+      }
+
+      .game-card, .game-synopsis {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <div class="header">
+      <span class="deco-star top-right">✦</span>
+      <h1>AWS Intern - <span class="highlight">ACTIVE</span></h1>
+      <p class="subtitle">Learn by playing — choose your vibe</p>
+      <span class="deco-star bottom-left">✦</span>
+    </div>
+
+    <div class="games-container">
+      <!-- Cloud Runner Card -->
+      <a href="./cloud-runner/subway-surfers-clone/" class="game-card runner">
+        <span class="card-number">01</span>
+        <div class="card-header">
+          <span class="game-icon">☁️🏃</span>
+          <span class="game-title">Cloud Runner</span>
+        </div>
+        <div class="card-body">
+          <p class="game-tagline">An endless runner that teaches real AWS services while you dodge and dash.</p>
+
+          <div class="game-synopsis">
+            <ul class="synopsis-list">
+              <li data-icon="⚡">Dodge obstacles while collecting AWS service orbs</li>
+              <li data-icon="🧠">Answer quiz gates that scale with your score</li>
+              <li data-icon="📖">Learn about S3, Lambda, DynamoDB, and 20+ services</li>
+              <li data-icon="🏆">Compete for high scores while actually learning</li>
+            </ul>
+          </div>
+
+          <div class="game-tags">
+            <span class="tag">Endless Runner</span>
+            <span class="tag">AWS Services</span>
+            <span class="tag">Quizzes</span>
+          </div>
+        </div>
+        <div class="play-hint">▶ PLAY CLOUD RUNNER</div>
+      </a>
+
+      <!-- Intern Block Blast Card -->
+      <a href="./intern-block-blast/" class="game-card blast">
+        <span class="card-number">02</span>
+        <div class="card-header">
+          <span class="game-icon">🧩🚀</span>
+          <span class="game-title">Intern Block Blast</span>
+        </div>
+        <div class="card-body">
+          <p class="game-tagline">A puzzle game to master your internship skills — one block at a time.</p>
+
+          <div class="game-synopsis">
+            <ul class="synopsis-list">
+              <li data-icon="⏰">Time management — deep work, prioritization, batching</li>
+              <li data-icon="🤖">AI tools — prompting, verification, rubber-duck debugging</li>
+              <li data-icon="📝">Design docs — one-pagers, non-goals, getting feedback</li>
+              <li data-icon="🤝">Networking — coffee chats, mentors, intern communities</li>
+            </ul>
+          </div>
+
+          <div class="game-tags">
+            <span class="tag">Puzzle</span>
+            <span class="tag">Internship Tips</span>
+            <span class="tag">Quizzes</span>
+          </div>
+        </div>
+        <div class="play-hint">▶ PLAY BLOCK BLAST</div>
+      </a>
+
+      <!-- Onboarding Quest Card -->
+      <a href="./onboarding-quest/" class="game-card quest">
+        <span class="card-number">03</span>
+        <div class="card-header">
+          <span class="game-icon">🎒🗺️</span>
+          <span class="game-title">Onboarding Quest</span>
+        </div>
+        <div class="card-body">
+          <p class="game-tagline">A platformer that guides you through your first weeks — collect resources, unlock access.</p>
+
+          <div class="game-synopsis">
+            <ul class="synopsis-list">
+              <li data-icon="💎">Collect gems to unlock real onboarding resources</li>
+              <li data-icon="🪪">Earn keycards to open gated zones</li>
+              <li data-icon="🖥️">Grab power-ups like Cloud Desktop and Coffee boosts</li>
+              <li data-icon="⭐">Explore Lobby, The Gap, and Campus for bonus stars</li>
+            </ul>
+          </div>
+
+          <div class="game-tags">
+            <span class="tag">Platformer</span>
+            <span class="tag">Onboarding</span>
+            <span class="tag">Resources</span>
+          </div>
+        </div>
+        <div class="play-hint">▶ PLAY ONBOARDING QUEST</div>
+      </a>
+    </div>
+
+    <div class="footer">Built for interns, by interns ★</div>
+  </div>
+</body>
+</html>
